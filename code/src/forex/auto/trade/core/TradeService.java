@@ -1,7 +1,5 @@
 package forex.auto.trade.core;
 
-import java.util.Date;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -9,7 +7,7 @@ import forex.auto.trade.TradeHelper;
 import forex.auto.trade.lib.Candle;
 import forex.auto.trade.ui.CandleChart;
 
-public class TradeService {
+public class TradeService  implements Runnable {
 
 	private static Log log = LogFactory.getLog(TradeService.class);
 	private PriceProvider priceProvider;
@@ -22,11 +20,14 @@ public class TradeService {
 	TimeSerise ONE_HOUR = TimeSerise.createTimeSerise(TimeSerise.ONE_HOUR);
 	TimeSerise FOUR_HOUR = TimeSerise.createTimeSerise(TimeSerise.FOUR_HOUR);
 	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY);
+	
 
 	public TradeService() {
 
 	}
 
+	
+	
 	public void addDataProvider(PriceProvider _priceProvider) {
 		this.priceProvider = _priceProvider;
 
