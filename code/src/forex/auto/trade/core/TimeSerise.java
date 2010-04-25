@@ -14,16 +14,18 @@ public class TimeSerise {
 	Candle[] candles = null;
 	private int timeFrame;
 	int point = 0;
+	int arrayIndex = 0;
 	private TimeSerise parent;
 
-	private TimeSerise(int _timeFrame, int size, TimeSerise parent) {
+	private TimeSerise(int _timeFrame, int _size, TimeSerise parent) {
 		this.timeFrame = _timeFrame;
-		candles = new Candle[size];
+		this.arrayIndex = _size -1;
+		candles = new Candle[_size];
 		this.parent = parent;
 	}
 
-	public static TimeSerise createTimeSerise(int _timeFrame) {
-		return new TimeSerise(_timeFrame, 2000, null);
+	public static TimeSerise createTimeSerise(int _timeFrame,int _size) {
+		return new TimeSerise(_timeFrame, _size, null);
 	}
 
 	public static TimeSerise createTimeSerise(int _timeFrame, TimeSerise parent) {
@@ -53,23 +55,27 @@ public class TimeSerise {
 
 		long inputTime = newDiffTime - (8 * 60 * 60000);
 
-		if (candles[0] != null) {
+		
 			Candle recordNow = candles[0];
 			// System.out.println("recordNow time:"
 			// + new Date(recordNow.getTime()) + ",the input time:"
 			// + new Date(inputTime));
 
-			if (recordNow.getTime() == inputTime) { // mergin the
+			if (recordNow!= null && recordNow.getTime() == inputTime) { // mergin the
 				// candle data.
-				//recordNow.setOpen(newOne.getOpen());
+				// recordNow.setOpen(newOne.getOpen());
 				recordNow.setClose(newOne.getClose());
 				recordNow.updateHigh(newOne.getHigh());
 				recordNow.updateLow(newOne.getLow());
 
 			} else {
-				for (int i = candles.length - 1; i >= 1; i--) {
+
+				int i = point;
+				while (i >= 1) {
 					candles[i] = candles[i - 1];
+					i--;
 				}
+
 				Candle newCandel = new Candle();
 				newCandel.setTime(inputTime);
 				newCandel.setOpen(newOne.getOpen());
@@ -77,15 +83,15 @@ public class TimeSerise {
 				newCandel.setHigh(newOne.getHigh());
 				newCandel.setLow(newOne.getLow());
 				candles[0] = newCandel;
-				point++;
-			}
 
-		} else {
-			candles[0] = newOne;
-		}
+				if (point < arrayIndex)
+					point++;
+			}
 
 		if (parent != null)
 			parent.updateCandle(newOne);
 	}
+	
+	
 
 }
