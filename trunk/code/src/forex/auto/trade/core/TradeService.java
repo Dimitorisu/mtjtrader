@@ -3,42 +3,40 @@ package forex.auto.trade.core;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import forex.auto.trade.TradeHelper;
 import forex.auto.trade.lib.Candle;
 import forex.auto.trade.ui.CandleChart;
 
-public class TradeService  implements Runnable {
+public class TradeService {
 
 	private static Log log = LogFactory.getLog(TradeService.class);
 	private PriceProvider priceProvider;
-	private TradeHelper tradeHelper;
 	volatile boolean exit = true;
-	TimeSerise ONE_MIN = TimeSerise.createTimeSerise(TimeSerise.ONEMIN);
-	TimeSerise FIVE_MIN = TimeSerise.createTimeSerise(TimeSerise.FIVE_MIN);
-	TimeSerise FIFTTH_MIN = TimeSerise.createTimeSerise(TimeSerise.FIFTTH_MIN);
-	TimeSerise HALF_HOUR = TimeSerise.createTimeSerise(TimeSerise.HALF_HOUR);
-	TimeSerise ONE_HOUR = TimeSerise.createTimeSerise(TimeSerise.ONE_HOUR);
-	TimeSerise FOUR_HOUR = TimeSerise.createTimeSerise(TimeSerise.FOUR_HOUR);
-	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY);
+	int candleCount =2000;
 	
+	TimeSerise ONE_MIN = TimeSerise.createTimeSerise(TimeSerise.ONEMIN,candleCount);
+	TimeSerise FIVE_MIN = TimeSerise.createTimeSerise(TimeSerise.FIVE_MIN,candleCount);
+	TimeSerise FIFTTH_MIN = TimeSerise.createTimeSerise(TimeSerise.FIFTTH_MIN,candleCount);
+	TimeSerise HALF_HOUR = TimeSerise.createTimeSerise(TimeSerise.HALF_HOUR,candleCount);
+	TimeSerise ONE_HOUR = TimeSerise.createTimeSerise(TimeSerise.ONE_HOUR,candleCount);
+	TimeSerise FOUR_HOUR = TimeSerise.createTimeSerise(TimeSerise.FOUR_HOUR,candleCount);
+	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY,candleCount);
 
-	public TradeService() {
+	public static TradeService instance = new TradeService();
+	
+	private TradeService() {
 
 	}
+	
+	public static TradeService getInstance() {
+		return instance;
+	}
 
-	
-	
 	public void addDataProvider(PriceProvider _priceProvider) {
 		this.priceProvider = _priceProvider;
 
 	}
 
-	public void addEa(TradeHelper _ea) {
-
-		this.tradeHelper = _ea;
-
-	}
-
+	
 	public void run() {
 		if (log.isInfoEnabled()) {
 			log.info("Starting trade service");
