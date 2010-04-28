@@ -1,5 +1,7 @@
 package forex.auto.trade.core;
 
+import java.util.ArrayList;
+
 import forex.auto.trade.lib.Candle;
 
 public class TimeSerise {
@@ -15,21 +17,20 @@ public class TimeSerise {
 	private int timeFrame;
 	int point = 0;
 	int arrayIndex = 0;
-	private TimeSerise parent;
+	private ArrayList<Indicator> indicators = null;
 
-	private TimeSerise(int _timeFrame, int _size, TimeSerise parent) {
+	private TimeSerise(int _timeFrame, int _size) {
 		this.timeFrame = _timeFrame;
 		this.arrayIndex = _size -1;
 		candles = new Candle[_size];
-		this.parent = parent;
 	}
 
 	public static TimeSerise createTimeSerise(int _timeFrame,int _size) {
-		return new TimeSerise(_timeFrame, _size, null);
+		return new TimeSerise(_timeFrame, _size);
 	}
 
-	public static TimeSerise createTimeSerise(int _timeFrame, TimeSerise parent) {
-		return new TimeSerise(_timeFrame, 2000, parent);
+	public static TimeSerise createTimeSerise(int _timeFrame) {
+		return new TimeSerise(_timeFrame, 2000);
 	}
 
 	public Candle[] getCandles() {
@@ -88,8 +89,21 @@ public class TimeSerise {
 					point++;
 			}
 
-		if (parent != null)
-			parent.updateCandle(newOne);
+		if (indicators != null){
+			
+			for(Indicator idc : indicators){
+				idc.update(point);
+			}
+			
+		}
+			
+	}
+	
+	public void registerIndicator(Indicator _indicator) {
+		if(indicators == null) {
+			indicators = new ArrayList<Indicator>();
+		}
+		indicators.add(_indicator);
 	}
 	
 	
