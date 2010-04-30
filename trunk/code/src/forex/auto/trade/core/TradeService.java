@@ -42,6 +42,9 @@ public class TradeService {
 			log.info("Starting trade service");
 		}
 
+		MACD macd = new MACD();
+		ONE_MIN.registerIndicator(macd);
+		
 		while (exit) {
 			Candle candle = priceProvider.read();
 			if (candle == null) {
@@ -56,6 +59,10 @@ public class TradeService {
 			ONE_HOUR.updateCandle(candle);
 			FOUR_HOUR.updateCandle(candle);
 			ONE_DAY.updateCandle(candle);
+			
+			double value = macd.value(MACD.MODE_MAIN, 0);
+			System.out.println("candle:" + ONE_MIN.getCandles(0)+ " macd value:" + value);
+			
 		}
 
 		CandleChart.display(ONE_DAY);

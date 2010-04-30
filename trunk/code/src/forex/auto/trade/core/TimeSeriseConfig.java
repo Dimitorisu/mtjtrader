@@ -4,19 +4,18 @@ import forex.auto.trade.lib.Candle;
 
 public class TimeSeriseConfig {
 	
-	private int tickCount;
+	Candle[] candles;
 
-	public TimeSeriseConfig(int count) {
-		this.tickCount = count;
+	public TimeSeriseConfig(Candle[] _candles) {
+		this.candles = _candles;
 	}
 	
 	public int maxTickCount(){
-		return tickCount;
+		return candles.length;
 	}
 
 	public Candle[] getCandles() {
-		// TODO Auto-generated method stub
-		return null;
+		return candles;
 	}
 
 }
