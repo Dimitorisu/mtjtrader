@@ -47,6 +47,10 @@ public class TimeSerise {
 		return ret;
 
 	}
+	
+	public Candle getCandles(int index) {
+		return candles[index];
+	}
 
 	public void updateCandle(Candle newOne) {
 
@@ -103,6 +107,8 @@ public class TimeSerise {
 		if(indicators == null) {
 			indicators = new ArrayList<Indicator>();
 		}
+		TimeSeriseConfig cfg = new TimeSeriseConfig(candles);
+		_indicator.init(cfg);
 		indicators.add(_indicator);
 	}
 	

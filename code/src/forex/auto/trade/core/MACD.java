@@ -19,6 +19,9 @@ public class MACD implements Indicator {
 	int fast_ema_period = 12;
 	int slow_ema_period = 26;
 	int signal_period = 9;
+	
+	public MACD() {
+	}
 
 	public MACD(int _fast_ema_period, int _slow_ema_period, int _signal_period) {
 		this.fast_ema_period = _fast_ema_period;
@@ -26,6 +29,15 @@ public class MACD implements Indicator {
 		this.signal_period = _signal_period;
 	}
 
+	public double value(int mode,int shift) {
+		if (mode == MODE_MAIN) {
+			return macd[shift];
+		} else if (mode == MODE_SIGNAL) {
+			return signal[shift];
+		}
+		return 0;
+	}
+	
 	public double iMACD(String symbol, int timeframe, int fast_ema_period,
 			int slow_ema_period, int signal_period, int applied_price,
 			int mode, int shift) {
