@@ -31,11 +31,12 @@ public class MACD implements Indicator {
 
 	public double value(int mode,int shift) {
 		if (mode == MODE_MAIN) {
-			return macd[shift];
+			return macd[shift]-signal[shift];
 		} else if (mode == MODE_SIGNAL) {
 			return signal[shift];
+		} else {
+			return macd[shift];
 		}
-		return 0;
 	}
 	
 	public double iMACD(String symbol, int timeframe, int fast_ema_period,
@@ -54,16 +55,18 @@ public class MACD implements Indicator {
 		double[] hist = new double[price.length];
 		MInteger outBegIdx = new MInteger();
 		MInteger outNbElement = new MInteger();
-		outBegIdx.value = -1;
-		outNbElement.value = -1;
+		outBegIdx.value = 0;
+		outNbElement.value = 1;
 		core.macd(0, price.length - 1, price, fast_ema_period, slow_ema_period,
 				signal_period, outBegIdx, outNbElement, macd, signal, hist);
 		if (mode == MODE_MAIN) {
-			return macd[shift];
+			return macd[shift]-signal[shift];
 		} else if (mode == MODE_SIGNAL) {
 			return signal[shift];
+		} else {
+			return macd[shift];
 		}
-		return 0;
+		
 	}
 
 	public void update(int size) {
@@ -73,8 +76,8 @@ public class MACD implements Indicator {
 		}
 		MInteger outBegIdx = new MInteger();
 		MInteger outNbElement = new MInteger();
-		outBegIdx.value = -1;
-		outNbElement.value = -1;
+		outBegIdx.value = 0;
+		outNbElement.value = 1;
 		core.macd(0, price.length - 1, price, fast_ema_period, slow_ema_period,
 				signal_period, outBegIdx, outNbElement, macd, signal, hist);
 	}
