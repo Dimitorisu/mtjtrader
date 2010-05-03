@@ -1,5 +1,7 @@
 package forex.auto.trade.core;
 
+import java.math.BigDecimal;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,8 +44,8 @@ public class TradeService {
 			log.info("Starting trade service");
 		}
 
-		MACD macd = new MACD();
-		ONE_MIN.registerIndicator(macd);
+		EMA ema = new EMA(5);
+		ONE_MIN.registerIndicator(ema);
 		
 		while (exit) {
 			Candle candle = priceProvider.read();
@@ -60,12 +62,12 @@ public class TradeService {
 			FOUR_HOUR.updateCandle(candle);
 			ONE_DAY.updateCandle(candle);
 			
-			double value = macd.value(MACD.MODE_MAIN, 0);
-			System.out.println("candle:" + ONE_MIN.getCandles(0)+ " macd value:" + value);
+			
 			
 		}
-
-		CandleChart.display(ONE_DAY);
+		double value = ema.value(0);
+		System.out.println("candle:" + ONE_MIN.getCandles(1)+ " macd value:" + (new BigDecimal(value)).toString());
+		
 
 	}
 	

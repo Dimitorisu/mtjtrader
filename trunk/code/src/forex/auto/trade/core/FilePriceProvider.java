@@ -23,7 +23,7 @@ public class FilePriceProvider implements PriceProvider {
 	}
 
 	public void init() {
-		File f = new File("d:\\GBPUSD1.csv");
+		File f = new File("d:\\EURUSD1.csv");
 		try {
 			reader = new BufferedReader(new FileReader(f));
 
