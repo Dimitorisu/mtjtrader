@@ -10,8 +10,11 @@ public class Stochastic implements Indicator {
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
 	double[] k = null;
-	double[] d = null;
-	double[] hist = null;
+	double[] signal = null;
+	
+	double[] sumlow = null;
+	double[] sumhigh = null;
+
 	Candle[] candles = null;
 	int k_period = 5;
 	int d_period = 3;
@@ -22,8 +25,6 @@ public class Stochastic implements Indicator {
 	double lowestPrice = Double.MAX_VALUE;
 	double highestPrice = -1;
 
-	EMA fast_line = null;
-	EMA slow_line = null;
 
 	// EMA signal_line = null;
 
@@ -39,11 +40,11 @@ public class Stochastic implements Indicator {
 
 	public double value(int mode, int shift) {
 		if (mode == MODE_MAIN) {
-			return fast_line.value(shift) - slow_line.value(shift);
+			return k[shift];
 		} else if (mode == MODE_SIGNAL) {
-			return d[shift];
+			return signal[shift];
 		} else {
-			return fast_line.value(shift) - slow_line.value(shift);
+			return k[shift];
 		}
 	}
 
@@ -56,28 +57,77 @@ public class Stochastic implements Indicator {
 	}
 
 	public void update(int size) {
-		
+		// already load new candle.index recalculate.
+		highestIndex++;
+		lowestIndex++;
+
 		// signal_line.update(size);
 		double low = candles[0].getLow();
 		double high = candles[0].getHigh();
-		
+		if (low < this.lowestPrice) {
+			this.lowestPrice = low;
+			this.lowestIndex = 0;
+		} else if (lowestIndex == k_period) {
+			double min = Double.MAX_VALUE;
+			for (int j = 0; j < k_period; j++) {
+				double l = candles[j].getLow();
+				if (l < min) {
+					min = l;
+					lowestIndex = j;
+
+				}
+			}
+			this.lowestPrice = min;
+		}
+
+		if (high < this.highestPrice) {
+			this.highestPrice = high;
+			this.highestIndex = 0;
+		} else if (highestIndex == k_period) {
+			double max = Double.MIN_VALUE;
+			for (int j = 0; j < k_period; j++) {
+				double h = candles[j].getHigh();
+				if (h > max) {
+					max = h;
+					highestIndex = j;
+				}
+			}
+			this.highestPrice = max;
+		}
 
 		int i = size;
 		while (i >= 1) {
 			k[i] = k[i - 1];
-			d[i] = d[i - 1];
+			signal[i] = signal[i - 1];
 			i--;
 		}
-		k[0] = fast_line.value(0) - slow_line.value(0);
+		double close = candles[0].getClose();
+		sumlow[0] = close - this.lowestPrice;
+		sumhigh[0] = this.highestPrice - this.lowestPrice;
+		
+		double lsum =0;
+		double hsum =0;
+		for (int j = 0; j < slow_period; j++) {
+			lsum = lsum + sumlow[j];
+			hsum = hsum + sumhigh[j];
+		}
+		BigDecimal a = new BigDecimal(lsum*100);
+		BigDecimal b = new BigDecimal(hsum);
+		if (b.compareTo(BigDecimal.ZERO) == 0)
+			k[0] = 100.0;
+		else {
+			BigDecimal main_curr = a.divide(b, 7, RoundingMode.HALF_UP);
+			k[0] = main_curr.doubleValue();
+		}
 
 		double sum = 0;
-		for (int j = 0; j < slow_period; j++) {
+		for (int j = 0; j < d_period; j++) {
 			sum = sum + k[j];
 		}
-		BigDecimal a = new BigDecimal(sum);
-		BigDecimal b = new BigDecimal(slow_period);
-		BigDecimal signal_curr = a.divide(b, 7, RoundingMode.HALF_UP);
-		d[0] = signal_curr.doubleValue();
+		BigDecimal m = new BigDecimal(sum);
+		BigDecimal n = new BigDecimal(d_period);
+		BigDecimal signal_curr = m.divide(n, 7, RoundingMode.HALF_UP);
+		signal[0] = signal_curr.doubleValue();
 	}
 
 	public void init(TimeSeriseConfig config) {
@@ -88,7 +138,9 @@ public class Stochastic implements Indicator {
 		// signal_line.init(config);
 
 		k = new double[tCount];
-		d = new double[tCount];
-		// hist = new double[tCount];
+		signal = new double[tCount];
+		
+		sumlow = new double[tCount];
+		sumhigh = new double[tCount];
 	}
 }

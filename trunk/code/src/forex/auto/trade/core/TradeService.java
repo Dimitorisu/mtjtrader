@@ -44,7 +44,7 @@ public class TradeService {
 			log.info("Starting trade service");
 		}
 
-		MACD ema = new MACD();
+		Stochastic ema = new Stochastic();
 		ONE_MIN.registerIndicator(ema);
 		
 		while (exit) {

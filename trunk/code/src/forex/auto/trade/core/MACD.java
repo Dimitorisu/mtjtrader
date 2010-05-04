@@ -33,7 +33,7 @@ public class MACD implements Indicator {
 
 	public double value(int mode, int shift) {
 		if (mode == MODE_MAIN) {
-			return fast_line.value(shift) - slow_line.value(shift);
+			return macd[shift];
 		} else if (mode == MODE_SIGNAL) {
 			return signal[shift];
 		} else {
