@@ -44,7 +44,7 @@ public class TradeService {
 			log.info("Starting trade service");
 		}
 
-		EMA ema = new EMA(5);
+		MACD ema = new MACD();
 		ONE_MIN.registerIndicator(ema);
 		
 		while (exit) {
@@ -65,10 +65,12 @@ public class TradeService {
 			
 			
 		}
-		double value = ema.value(0);
-		System.out.println("candle:" + ONE_MIN.getCandles(1)+ " macd value:" + (new BigDecimal(value)).toString());
+		double value = ema.value(MACD.MODE_SIGNAL,4);
+		System.out.println("candle:" + ONE_MIN.getCandles(4)+ " macd value:" + (new BigDecimal(value)).toString());
 		
-
+		if (log.isInfoEnabled()) {
+			log.info("end trade service");
+		}
 	}
 	
 //	public static void main(String[] args) {
