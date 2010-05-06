@@ -65,8 +65,8 @@ public class TradeService {
 			
 			
 		}
-		double value = ema.value(MACD.MODE_SIGNAL,4);
-		System.out.println("candle:" + ONE_MIN.getCandles(4)+ " macd value:" + (new BigDecimal(value)).toString());
+		double value = ema.value(Stochastic.MODE_MAIN,0);
+		System.out.println("candle:" + ONE_MIN.getCandles(0)+ " macd value:" + (new BigDecimal(value)).toString());
 		
 		if (log.isInfoEnabled()) {
 			log.info("end trade service");
