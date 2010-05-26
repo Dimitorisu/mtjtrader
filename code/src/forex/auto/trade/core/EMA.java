@@ -1,8 +1,5 @@
 package forex.auto.trade.core;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import forex.auto.trade.lib.Candle;
 
 public class EMA implements Indicator {
@@ -26,23 +23,21 @@ public class EMA implements Indicator {
 
 	}
 
-	public void update(int size) {
+	public void update(int size, boolean newTick) {
 		int i = size;
-		while (i >= 1) {
-			hist[i] = hist[i - 1];
-			i--;
+		if (newTick) {
+			while (i >= 1) {
+				hist[i] = hist[i - 1];
+				i--;
+			}
 		}
 
-		if (size <= time_period ) {
-			BigDecimal a = new BigDecimal(2* candles[0].getClose()+ (size -1)*hist[1]);
-			BigDecimal b = new BigDecimal(size+1);
-			BigDecimal ema = a.divide(b,7,RoundingMode.HALF_UP);
-			hist[0] = ema.doubleValue();
+		if (size <= time_period) {
+			double a = 2 * candles[0].getClose() + (size - 1) * hist[1];
+			hist[0] = a / (size + 1);
 		} else {
-			BigDecimal a = new BigDecimal(2* candles[0].getClose()+ (time_period -1)*hist[1]);
-			BigDecimal b = new BigDecimal(time_period+1);
-			BigDecimal ema = a.divide(b,7,RoundingMode.HALF_UP);
-			hist[0] = ema.doubleValue();
+			double a = 2 * candles[0].getClose() + (time_period - 1) * hist[1];
+			hist[0] = a / (time_period + 1);
 		}
 
 	}
