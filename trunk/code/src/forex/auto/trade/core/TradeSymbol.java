@@ -3,14 +3,10 @@ package forex.auto.trade.core;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import forex.auto.trade.ea.MyEA;
 import forex.auto.trade.lib.Candle;
 
-public class TradeService {
-
-	private static Log log = LogFactory.getLog(TradeService.class);
-	private PriceProvider priceProvider;
-	volatile boolean exit = true;
+public class TradeSymbol {
+	private static Log log = LogFactory.getLog(TradeSymbol.class);
 	int candleCount = 1440;
 
 	TimeSerise ONE_MIN = TimeSerise.createTimeSerise(TimeSerise.ONE_MIN,
@@ -27,32 +23,6 @@ public class TradeService {
 			candleCount);
 	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY,
 			candleCount);
-	
-	private MyEA ea;
-
-	public static TradeService instance = new TradeService();
-
-	private TradeService() {
-		start();
-
-	}
-
-	public void start() {
-		
-		if (ea != null) {
-			ea.init();
-		}
-	}
-
-	public void stop() {
-		if (ea != null) {
-			ea.destroy();
-		}
-	}
-
-	public static TradeService getInstance() {
-		return instance;
-	}
 
 	public TimeSerise getTimeSerise(int timeFrame) {
 		TimeSerise ts = null;
@@ -74,11 +44,6 @@ public class TradeService {
 		return ts;
 	}
 
-	public void addDataProvider(PriceProvider _priceProvider) {
-		this.priceProvider = _priceProvider;
-
-	}
-
 	public void initData(int timeFrame, Candle[] candles) {
 		TimeSerise ts = getTimeSerise(timeFrame);
 		if (ts != null) {
@@ -92,40 +57,4 @@ public class TradeService {
 			}
 		}
 	}
-
-	public void run() {
-		if (log.isInfoEnabled()) {
-			log.info("Starting trade service");
-		}
-
-		while (exit) {
-			Candle candle = priceProvider.read();
-			if (candle == null) {
-				break;
-			}
-			ONE_MIN.updateCandle(candle);
-			FIVE_MIN.updateCandle(candle);
-			FIFTTH_MIN.updateCandle(candle);
-			HALF_HOUR.updateCandle(candle);
-			ONE_HOUR.updateCandle(candle);
-			FOUR_HOUR.updateCandle(candle);
-			ONE_DAY.updateCandle(candle);
-			
-			if (ea != null) {
-				ea.start();
-			}
-
-		}
-
-		
-		if (log.isInfoEnabled()) {
-			log.info("end trade service");
-		}
-	}
-
-	public void addEa(MyEA myEA) {
-
-		this.ea = myEA;
-	}
-
 }

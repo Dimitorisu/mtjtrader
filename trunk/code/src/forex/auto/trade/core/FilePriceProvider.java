@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;

@@ -1,48 +1,59 @@
 package forex.auto.trade;
 
-import com.tictactec.ta.lib.Core;
-import com.tictactec.ta.lib.MInteger;
+import java.util.HashMap;
 
-import forex.auto.trade.lib.Price;
-import forex.auto.trade.lib.PriceData;
+import forex.auto.trade.core.MACD;
+import forex.auto.trade.core.TimeSerise;
+import forex.auto.trade.core.TradeService;
 
 public abstract class TradeHelper {
 
+	public final static int ONE_MIN = 60000;
+	public final static int FIVE_MIN = 300000;
+	public final static int FIFTTH_MIN = 15 * 60000;
+	public final static int HALF_HOUR = 30 * 60000;
+	public final static int ONE_HOUR = 60 * 60000;
+	public final static int FOUR_HOUR = 240 * 60000;
+	public final static int ONE_DAY = 24 * 60 * 60000;
+
+	public static int PRICE_CLOSE = 0;
+	public static int PRICE_OPEN = 1;
+	public static int PRICE_HIGH = 2;
+	public static int PRICE_LOW = 3;
+
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
-	
-	
+
 	public abstract void start();
+
 	public abstract void init();
+
 	public abstract void destroy();
+
+	private static HashMap<IndicatorKey, MACD> macd = new HashMap<IndicatorKey, MACD>();
 
 	public static double iMACD(String symbol, int timeframe,
 			int fast_ema_period, int slow_ema_period, int signal_period,
 			int applied_price, int mode, int shift) {
 
-		PriceData oPriceData = PriceData.getDatas(symbol);
-		Price oPrice = oPriceData.getPrice(timeframe);
-		double[] price = new double[] {};
+		IndicatorKey key = new IndicatorKey(
+				((31 * fast_ema_period) * 31 + slow_ema_period) * 31
+						+ signal_period);
 
-		if (applied_price == PriceData.PRICE_CLOSE) {
-			price = oPrice.getClose();
+		MACD macdI = macd.get(key);
+		if (macdI == null) {
+			TradeService trader = TradeService.getInstance();
+			TimeSerise ts = trader.getTimeSerise(timeframe);
+			macdI = new MACD(fast_ema_period, slow_ema_period, signal_period);
+			ts.registerIndicator(macdI);
+			macd.put(key, macdI);
 		}
-
-		Core core = new Core();
-		double macd[] = new double[price.length];
-		double signal[] = new double[price.length];
-		double hist[] = new double[price.length];
-		MInteger outBegIdx = new MInteger();
-		MInteger outNbElement = new MInteger();
-		outBegIdx.value = -1;
-		outNbElement.value = -1;
-		core.macd(0, price.length - 1, price, fast_ema_period, slow_ema_period,
-				signal_period, outBegIdx, outNbElement, macd, signal, hist);
-		if (mode == MODE_MAIN) {
-			return macd[shift];
-		} else if (mode == MODE_SIGNAL) {
-			return signal[shift];
-		}
-		return 0;
+		return macdI.value(mode, shift);
+	}
+	
+	public TimeSerise getTimeSerise(int timeframe) {
+		TradeService trader = TradeService.getInstance();
+		TimeSerise ts = trader.getTimeSerise(timeframe);
+		return ts;
 	}
 }

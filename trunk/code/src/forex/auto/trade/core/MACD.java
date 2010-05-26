@@ -1,8 +1,5 @@
 package forex.auto.trade.core;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import forex.auto.trade.lib.Candle;
 
 public class MACD implements Indicator {
@@ -16,10 +13,11 @@ public class MACD implements Indicator {
 	int fast_ema_period = 12;
 	int slow_ema_period = 26;
 	int signal_period = 9;
-	
+
 	EMA fast_line = null;
 	EMA slow_line = null;
-	//EMA signal_line = null;
+
+	// EMA signal_line = null;
 
 	public MACD() {
 	}
@@ -49,28 +47,29 @@ public class MACD implements Indicator {
 
 	}
 
-	public void update(int size) {
-		fast_line.update(size);
-		slow_line.update(size);
-		//signal_line.update(size);
+	public void update(int size, boolean newTick) {
 		
+		// signal_line.update(size);
+
 		int i = size;
-		while (i >= 1) {
-			macd[i] = macd[i - 1];
-			signal[i] = signal[i - 1];
-			i--;
+		if (newTick) {
+			while (i >= 1) {
+				macd[i] = macd[i - 1];
+				signal[i] = signal[i - 1];
+				i--;
+			}
 		}
+		
+		fast_line.update(size,newTick);
+		slow_line.update(size,newTick);
+		
 		macd[0] = fast_line.value(0) - slow_line.value(0);
-		
-		
-		double sum =0;
-		for(int j=0;j<signal_period;j++) {
-			sum = sum +  macd[j];
+
+		double sum = 0;
+		for (int j = 0; j < signal_period; j++) {
+			sum = sum + macd[j];
 		}
-		BigDecimal a = new BigDecimal(sum);
-		BigDecimal b = new BigDecimal(signal_period);
-		BigDecimal signal_curr = a.divide(b,7,RoundingMode.HALF_UP);
-		signal[0]= signal_curr.doubleValue();
+		signal[0] = sum / signal_period;
 	}
 
 	public void init(TimeSeriseConfig config) {
@@ -83,11 +82,11 @@ public class MACD implements Indicator {
 		slow_line = new EMA(this.slow_ema_period);
 		slow_line.init(config);
 
-		//signal_line = new EMA(this.signal_period);
-		//signal_line.init(config);
+		// signal_line = new EMA(this.signal_period);
+		// signal_line.init(config);
 
 		macd = new double[tCount];
 		signal = new double[tCount];
-		//hist = new double[tCount];
+		// hist = new double[tCount];
 	}
 }
