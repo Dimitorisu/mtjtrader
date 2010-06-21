@@ -4,6 +4,15 @@ import forex.auto.trade.ea.MyEA;
 
 
 public class TradeMain {
+	
+	private static TradeService ts = null;
+	
+	public static void start() {
+		ts = TradeService.getInstance();
+		ts.addEa(new MyEA());
+	}
+	
+
 
 	/**
 	 * @param args
