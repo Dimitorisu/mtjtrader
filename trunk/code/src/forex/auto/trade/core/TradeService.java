@@ -27,7 +27,7 @@ public class TradeService {
 			candleCount);
 	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY,
 			candleCount);
-	
+
 	private MyEA ea;
 
 	public static TradeService instance = new TradeService();
@@ -38,7 +38,7 @@ public class TradeService {
 	}
 
 	public void start() {
-		
+
 		if (ea != null) {
 			ea.init();
 		}
@@ -79,13 +79,12 @@ public class TradeService {
 
 	}
 
-	public void initData(int timeFrame, Candle[] candles) {
+	public void addData(int timeFrame, Candle c) {
 		TimeSerise ts = getTimeSerise(timeFrame);
 		if (ts != null) {
 
-			for (Candle c : candles) {
-				ts.updateCandle(c);
-			}
+			ts.updateCandle(c);
+
 		} else {
 			if (log.isWarnEnabled()) {
 				log.warn("Time frame :" + timeFrame + " is not found!");
@@ -110,14 +109,13 @@ public class TradeService {
 			ONE_HOUR.updateCandle(candle);
 			FOUR_HOUR.updateCandle(candle);
 			ONE_DAY.updateCandle(candle);
-			
+
 			if (ea != null) {
 				ea.start();
 			}
 
 		}
 
-		
 		if (log.isInfoEnabled()) {
 			log.info("end trade service");
 		}
