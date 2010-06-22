@@ -1,6 +1,7 @@
 package forex.auto.trade.core;
 
 import forex.auto.trade.ea.MyEA;
+import forex.auto.trade.lib.Candle;
 
 public class TradeMain {
 
@@ -11,12 +12,25 @@ public class TradeMain {
 		ts.addEa(new MyEA());
 	}
 
-	public double doTrade(long time,double ask, double bid) {
+	public static double doTrade(long time,double ask, double bid) {
 		return 0;
 	}
 
-	public int initData(int timeFrame, long time, double open, double low,
+	public static int addData(int timeFrame, long time, double open, double low,
 			double high, double close) {
+		
+		if(ts != null) {
+			Candle c = new Candle();
+			
+			
+			c.setTime(time * 1000); //change from second to ms.
+			c.setOpen(open);
+			c.setLow(low);
+			c.setHigh(high);
+			c.setClose(close);
+			ts.addData(timeFrame,c);
+		}
+		
 		return 0;
 	}
 
