@@ -21,8 +21,6 @@ public class TradeMain {
 		
 		if(ts != null) {
 			Candle c = new Candle();
-			
-			
 			c.setTime(time * 1000); //change from second to ms.
 			c.setOpen(open);
 			c.setLow(low);
