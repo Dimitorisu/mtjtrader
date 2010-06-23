@@ -91,6 +91,16 @@ public class TradeService {
 			}
 		}
 	}
+	
+	public void addData(Candle candle){
+		ONE_MIN.updateCandle(candle);
+		FIVE_MIN.updateCandle(candle);
+		FIFTTH_MIN.updateCandle(candle);
+		HALF_HOUR.updateCandle(candle);
+		ONE_HOUR.updateCandle(candle);
+		FOUR_HOUR.updateCandle(candle);
+		ONE_DAY.updateCandle(candle);
+	}
 
 	public void run() {
 		if (log.isInfoEnabled()) {

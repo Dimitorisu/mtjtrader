@@ -16,7 +16,7 @@ public class TimeSerise {
 
 	Candle[] candles = null;
 	private int timeFrame;
-	int point = 0;
+	int candleCount = 0;
 	int arrayIndex = 0;
 	private ArrayList<Indicator> indicators = null;
 
@@ -37,8 +37,8 @@ public class TimeSerise {
 	public Candle[] getCandles() {
 		int max = 20;
 
-		if (point < max) {
-			max = point;
+		if (candleCount < max) {
+			max = candleCount;
 		}
 
 		Candle[] ret = new Candle[max];
@@ -69,6 +69,7 @@ public class TimeSerise {
 		boolean newTick = false;
 
 		if (recordNow == null) {
+
 			Candle newCandel = new Candle();
 			newCandel.setTime(inputTime);
 			newCandel.setOpen(newOne.getOpen());
@@ -76,6 +77,8 @@ public class TimeSerise {
 			newCandel.setHigh(newOne.getHigh());
 			newCandel.setLow(newOne.getLow());
 			candles[0] = newCandel;
+			candleCount++;
+
 		} else if (recordNow.getTime() == inputTime) { // mergin
 			// the
 			// candle data.
@@ -83,10 +86,11 @@ public class TimeSerise {
 			recordNow.setClose(newOne.getClose());
 			recordNow.updateHigh(newOne.getHigh());
 			recordNow.updateLow(newOne.getLow());
+			//candleCount++;
 
 		} else if (recordNow.getTime() < inputTime) {
 
-			int i = point;
+			int i = candleCount;
 			while (i >= 1) {
 				candles[i] = candles[i - 1];
 				i--;
@@ -101,30 +105,31 @@ public class TimeSerise {
 			candles[0] = newCandel;
 			newTick = true;
 
-			if (point < arrayIndex)
-				point++;
+			if (candleCount < arrayIndex)
+				candleCount++;
 		} else { // a time of history, must not happen. seek a right position.
 			int i = 1;
 			while (i < candles.length) {
 				long t = candles[i].getTime();
-				if(t>inputTime) {
+				if (t > inputTime) {
 					i++;
 					continue;
-				} else if(t==inputTime) {
-					
+				} else if (t == inputTime) {
+
 					recordNow.setClose(newOne.getClose());
 					recordNow.updateHigh(newOne.getHigh());
 					recordNow.updateLow(newOne.getLow());
-					
+					candleCount = i + 1;
 					break;
 				} else {
+
+					int j = candles.length -1;
 					
-					int j = point;
-					while (j >= i) {
+					while (j > i) {
 						candles[j] = candles[j - 1];
 						j--;
 					}
-					
+
 					Candle newCandel = new Candle();
 					newCandel.setTime(inputTime);
 					newCandel.setOpen(newOne.getOpen());
@@ -132,7 +137,8 @@ public class TimeSerise {
 					newCandel.setHigh(newOne.getHigh());
 					newCandel.setLow(newOne.getLow());
 					candles[i] = newCandel;
-					point++;
+					candleCount++;
+					break;
 				}
 
 			}
@@ -141,17 +147,16 @@ public class TimeSerise {
 		if (indicators != null) {
 
 			for (Indicator idc : indicators) {
-				idc.update(point, newTick);
+				idc.update(candleCount, newTick);
 			}
 
 		}
 
 	}
 
-
 	public Candle iHighest(int type, int count, int start) {
 
-		int end = count + start > point ? point : count + start;
+		int end = count + start > count ? count : count + start;
 		double highest = Double.MIN_VALUE;
 
 		int highestIndex = 0;
@@ -194,7 +199,7 @@ public class TimeSerise {
 
 	public Candle iLowest(int type, int count, int start) {
 
-		int end = count + start > point ? point : count + start;
+		int end = count + start > count ? count : count + start;
 		double highest = Double.MIN_VALUE;
 
 		int highestIndex = 0;
