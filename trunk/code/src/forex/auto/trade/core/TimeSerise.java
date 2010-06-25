@@ -20,11 +20,14 @@ public class TimeSerise {
 	int counted = 0;
 	int arrayIndex = 0;
 	private ArrayList<Indicator> indicators = null;
+	TimeSeriseConfig cfg = null;
 
 	private TimeSerise(int _timeFrame, int _size) {
 		this.timeFrame = _timeFrame;
 		this.arrayIndex = _size - 1;
 		candles = new Candle[_size];
+		cfg = new TimeSeriseConfig(candles);
+
 	}
 
 	public static TimeSerise createTimeSerise(int _timeFrame, int _size) {
@@ -54,7 +57,7 @@ public class TimeSerise {
 		return candles[index];
 	}
 
-	public void updateCandle(Candle newOne) {
+	public long updateCandle(Candle newOne) {
 
 		long newTime = newOne.getTime();
 		long difftime = newTime + (8 * 60 * 60000); // the offset of java time.
@@ -78,7 +81,7 @@ public class TimeSerise {
 			newCandel.setHigh(newOne.getHigh());
 			newCandel.setLow(newOne.getLow());
 			candles[0] = newCandel;
-			candleCount++;
+			cfg.increaseBar();
 			counted++;
 
 		} else if (recordNow.getTime() == inputTime) { // mergin
@@ -108,52 +111,53 @@ public class TimeSerise {
 			candles[0] = newCandel;
 			newTick = true;
 
-			if (candleCount < arrayIndex)
-				candleCount++;
-			
+			cfg.increaseBar();
+
 			counted++;
-			
-		} else { // a time of history, must not happen. seek a right position.
-			int i = 1;
-			while (i < candles.length) {
-				long t = candles[i].getTime();
-				if (t > inputTime) {
-					i++;
-					continue;
-				} else if (t == inputTime) {
 
-					recordNow.setClose(newOne.getClose());
-					recordNow.updateHigh(newOne.getHigh());
-					recordNow.updateLow(newOne.getLow());
-					// candleCount = i + 1;
-					
-					counted= i + 1;
-					break;
-				} else {
+		} else {
+			return -recordNow.getTime();
 
-					int j = candles.length - 1;
-
-					while (j > i) {
-						candles[j] = candles[j - 1];
-						j--;
-					}
-
-					Candle newCandel = new Candle();
-					newCandel.setTime(inputTime);
-					newCandel.setOpen(newOne.getOpen());
-					newCandel.setClose(newOne.getClose());
-					newCandel.setHigh(newOne.getHigh());
-					newCandel.setLow(newOne.getLow());
-					candles[i] = newCandel;
-
-					if (candleCount < arrayIndex)
-						candleCount++;
-
-					counted=candleCount;
-					break;
-				}
-
-			}
+			// a time of history, must not happen. seek a right position.
+			// int i = 1;
+			// while (i < candles.length) {
+			// long t = candles[i].getTime();
+			// if (t > inputTime) {
+			// i++;
+			// continue;
+			// } else if (t == inputTime) {
+			//
+			// recordNow.setClose(newOne.getClose());
+			// recordNow.updateHigh(newOne.getHigh());
+			// recordNow.updateLow(newOne.getLow());
+			// // candleCount = i + 1;
+			//
+			// counted = i + 1;
+			// break;
+			// } else {
+			//
+			// int j = candles.length - 1;
+			//
+			// while (j > i) {
+			// candles[j] = candles[j - 1];
+			// j--;
+			// }
+			//
+			// Candle newCandel = new Candle();
+			// newCandel.setTime(inputTime);
+			// newCandel.setOpen(newOne.getOpen());
+			// newCandel.setClose(newOne.getClose());
+			// newCandel.setHigh(newOne.getHigh());
+			// newCandel.setLow(newOne.getLow());
+			// candles[i] = newCandel;
+			//
+			// cfg.increaseBar();
+			//
+			// counted = candleCount;
+			// break;
+			// }
+			//
+			// }
 		}
 
 		if (indicators != null) {
@@ -164,6 +168,7 @@ public class TimeSerise {
 
 		}
 
+		return inputTime;
 	}
 
 	public Candle iHighest(int type, int count, int start) {
@@ -256,7 +261,6 @@ public class TimeSerise {
 		if (indicators == null) {
 			indicators = new ArrayList<Indicator>();
 		}
-		TimeSeriseConfig cfg = new TimeSeriseConfig(candles);
 		_indicator.init(cfg);
 		indicators.add(_indicator);
 	}
