@@ -12,7 +12,7 @@ public class TradeMain {
 		ts.addEa(new MyEA());
 	}
 
-	public static int doTrade(long time, double open, double low, double high,
+	public static int syncData(long time, double open, double low, double high,
 			double close) {
 		if (ts != null) {
 			Candle c = new Candle();
