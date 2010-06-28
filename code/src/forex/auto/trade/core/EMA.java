@@ -27,7 +27,9 @@ public class EMA extends TradeHelper implements Indicator {
 	public void start() {
 		TimeSeriseConfig config = this.getContext();
 		
-		int unCounted = size;
+		int unCounted = this.unCountedBars();
+		
+		
 		if (unCounted >0) {
 			while (unCounted >= 1) {
 				hist[unCounted] = hist[unCounted - 1];
