@@ -31,8 +31,13 @@ public class EMA extends TradeHelper implements Indicator {
 		
 		
 		if (unCounted >0) {
+			
+			int bars = config.bars();
+			int start = bars < config.maxTickCount()? bars :config.maxTickCount() ;
+			
 			while (unCounted >= 1) {
-				hist[unCounted] = hist[unCounted - 1];
+				hist[start] = hist[start - 1];
+				start--;
 				unCounted--;
 			}
 		}
