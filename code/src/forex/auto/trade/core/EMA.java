@@ -1,8 +1,9 @@
 package forex.auto.trade.core;
 
+import forex.auto.trade.TradeHelper;
 import forex.auto.trade.lib.Candle;
 
-public class EMA implements Indicator {
+public class EMA extends TradeHelper implements Indicator {
 
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
@@ -23,16 +24,19 @@ public class EMA implements Indicator {
 
 	}
 
-	public void update(int size, boolean newTick) {
-		int i = size;
-		if (newTick) {
-			while (i >= 1) {
-				hist[i] = hist[i - 1];
-				i--;
+	public void start() {
+		TimeSeriseConfig config = this.getContext();
+		
+		int unCounted = size;
+		if (unCounted >0) {
+			while (unCounted >= 1) {
+				hist[unCounted] = hist[unCounted - 1];
+				unCounted--;
 			}
 		}
 
-		if (size <= time_period) {
+		if (config.bars() <= time_period) {
+			
 			double a = 2 * candles[0].getClose() + (size - 1) * hist[1];
 			hist[0] = a / (size + 1);
 		} else {
@@ -42,7 +46,8 @@ public class EMA implements Indicator {
 
 	}
 
-	public void init(TimeSeriseConfig config) {
+	public void init() {
+		TimeSeriseConfig config = this.getContext();
 		candles = config.getCandles();
 		int tCount = config.maxTickCount();
 		hist = new double[tCount];
