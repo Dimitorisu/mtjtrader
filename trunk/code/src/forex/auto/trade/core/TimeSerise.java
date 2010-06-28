@@ -56,6 +56,14 @@ public class TimeSerise {
 	public Candle getCandles(int index) {
 		return candles[index];
 	}
+	
+	public Candle getCandle(int index) {
+		if(index < candles.length) {
+			return candles[index];
+		} else {
+			return null;
+		}
+	}
 
 	public long updateCandle(Candle newOne) {
 

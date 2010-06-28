@@ -93,6 +93,7 @@ public class TradeService {
 	}
 	
 	public void addData(Candle candle){
+		
 		ONE_MIN.updateCandle(candle);
 		FIVE_MIN.updateCandle(candle);
 		FIFTTH_MIN.updateCandle(candle);
