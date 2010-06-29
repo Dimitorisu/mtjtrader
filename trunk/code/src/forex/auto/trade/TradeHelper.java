@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import forex.auto.trade.core.MACD;
 import forex.auto.trade.core.TimeSerise;
+import forex.auto.trade.core.TimeSeriseConfig;
 import forex.auto.trade.core.TradeService;
 
 public abstract class TradeHelper {
@@ -24,12 +25,42 @@ public abstract class TradeHelper {
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
 
+	TimeSeriseConfig tCtx = null;
+	private int countedBars =0;
+	
 	public abstract void start();
 
 	public abstract void init();
 
-	public abstract void destroy();
-
+	public void destroy() {};
+	
+	
+	public void init(TimeSeriseConfig config) {
+		
+		tCtx = config;
+		
+		init();
+		
+	}
+	
+	
+	public void onPriceChange() {
+		start();
+		countedBars = tCtx.bars();
+	}
+	
+	public int unCountedBars() {
+		
+		return tCtx.bars() - countedBars;
+		
+	}
+	
+	
+	public TimeSeriseConfig getContext() {
+		return tCtx;
+	}
+	
+	
 	private static HashMap<IndicatorKey, MACD> macd = new HashMap<IndicatorKey, MACD>();
 
 	public static double iMACD(String symbol, int timeframe,
@@ -51,7 +82,7 @@ public abstract class TradeHelper {
 		return macdI.value(mode, shift);
 	}
 	
-	public TimeSerise getTimeSerise(int timeframe) {
+	public static TimeSerise getTimeSerise(int timeframe) {
 		TradeService trader = TradeService.getInstance();
 		TimeSerise ts = trader.getTimeSerise(timeframe);
 		return ts;
