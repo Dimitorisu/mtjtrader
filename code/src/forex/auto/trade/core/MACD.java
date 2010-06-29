@@ -1,15 +1,14 @@
 package forex.auto.trade.core;
 
-import forex.auto.trade.lib.Candle;
+import forex.auto.trade.TradeHelper;
 
-public class MACD implements Indicator {
+public class MACD extends TradeHelper implements Indicator {
 
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
-	double[] macd = null;
-	double[] signal = null;
-	double[] hist = null;
-	Candle[] candles = null;
+	BarValue macd = null;
+	BarValue signal = null;
+	BarValue hist = null;
 	int fast_ema_period = 12;
 	int slow_ema_period = 26;
 	int signal_period = 9;
@@ -31,49 +30,48 @@ public class MACD implements Indicator {
 
 	public double value(int mode, int shift) {
 		if (mode == MODE_MAIN) {
-			return macd[shift];
+			return macd.getValue(shift);
 		} else if (mode == MODE_SIGNAL) {
-			return signal[shift];
+			return signal.getValue(shift);
 		} else {
 			return fast_line.value(shift) - slow_line.value(shift);
 		}
 	}
 
-	public double iMACD(String symbol, int timeframe, int fast_ema_period,
-			int slow_ema_period, int signal_period, int applied_price,
-			int mode, int shift) {
+	public void start() {
+		TimeSeriseConfig config = this.getContext();
 
-		return 0;
+		fast_line.start();
+		slow_line.start();
 
-	}
+		int countIndex = this.unCountedBars();
 
-	public void update(int size, boolean newTick) {
-		
-		// signal_line.update(size);
+		if (countIndex == 0) {
+			macd.setValue(0, fast_line.value(0) - slow_line.value(0));
 
-		int i = size;
-		if (newTick) {
-			while (i >= 1) {
-				macd[i] = macd[i - 1];
-				signal[i] = signal[i - 1];
-				i--;
+			double sum = 0;
+			for (int j = 0; j < signal_period; j++) {
+				sum = sum + macd.getValue(j);
 			}
-		}
-		
-		fast_line.update(size,newTick);
-		slow_line.update(size,newTick);
-		
-		macd[0] = fast_line.value(0) - slow_line.value(0);
+			signal.setValue(0, sum / signal_period);
+		} else {
+			int bars = config.bars();
+			while (countIndex >= 0) {
+				int n = bars - countIndex;
+				macd.newValue(fast_line.value(n) - slow_line.value(n));
+				double sum = 0;
+				for (int j = 0; j < signal_period; j++) {
+					sum = sum + macd.getValue(n + j);
+				}
+				signal.newValue(sum / signal_period);
+			}
 
-		double sum = 0;
-		for (int j = 0; j < signal_period; j++) {
-			sum = sum + macd[j];
 		}
-		signal[0] = sum / signal_period;
+		
 	}
 
-	public void init(TimeSeriseConfig config) {
-		candles = config.getCandles();
+	public void init() {
+		TimeSeriseConfig config = this.getContext();
 		int tCount = config.maxTickCount();
 
 		fast_line = new EMA(this.fast_ema_period);
@@ -85,8 +83,8 @@ public class MACD implements Indicator {
 		// signal_line = new EMA(this.signal_period);
 		// signal_line.init(config);
 
-		macd = new double[tCount];
-		signal = new double[tCount];
+		macd = new BarValue(tCount);
+		signal = new BarValue(tCount);
 		// hist = new double[tCount];
 	}
 }
