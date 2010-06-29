@@ -1,18 +1,18 @@
 package forex.auto.trade.core;
 
+import forex.auto.trade.TradeHelper;
 import forex.auto.trade.lib.Candle;
 
-public class Stochastic implements Indicator {
+public class Stochastic extends TradeHelper implements Indicator {
 
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
-	double[] k = null;
-	double[] signal = null;
+	BarValue k = null;
+	BarValue signal = null;
 
-	double[] sumlow = null;
-	double[] sumhigh = null;
+	BarValue sumlow = null;
+	BarValue sumhigh = null;
 
-	Candle[] candles = null;
 	int k_period = 5;
 	int d_period = 3;
 	int slow_period = 3;
@@ -37,32 +37,22 @@ public class Stochastic implements Indicator {
 	public double value(int mode, int shift) {
 
 		if (mode == MODE_MAIN) {
-			return k[shift];
+			return k.getValue(shift);
 		} else if (mode == MODE_SIGNAL) {
-			return signal[shift];
+			return signal.getValue(shift);
 		} else {
-			return k[shift];
+			return k.getValue(shift);
 		}
 	}
 
-	public void update(int size, boolean newTick) {
+	public void start() {
 		// already load new candle.index recalculate.
-		int i = size;
-		if (newTick) {
-			while (i >= 1) {
-				k[i] = k[i - 1];
-				signal[i] = signal[i - 1];
-				sumlow[i] = sumlow[i - 1];
-				sumhigh[i] = sumhigh[i - 1];
-				i--;
-			}
-			highestIndex++;
-			lowestIndex++;
-		}
-		
+
+		TimeSeriseConfig config = this.getContext();
 		// signal_line.update(size);
-		double low = candles[0].getLow();
-		double high = candles[0].getHigh();
+		Candle current = config.getCandle(0);
+		double low = current.getLow();
+		double high = current.getHigh();
 		if (low < this.lowestPrice) {
 			this.lowestPrice = low;
 			this.lowestIndex = 0;
@@ -70,7 +60,7 @@ public class Stochastic implements Indicator {
 			double min = low;
 			lowestIndex = 0;
 			for (int j = 1; j < k_period; j++) {
-				double l = candles[j].getLow();
+				double l = config.getCandle(j).getLow();
 				if (l < min) {
 					min = l;
 					lowestIndex = j;
@@ -86,7 +76,7 @@ public class Stochastic implements Indicator {
 			double max = high;
 			highestIndex = 0;
 			for (int j = 1; j < k_period; j++) {
-				double h = candles[j].getHigh();
+				double h = config.getCandle(j).getHigh();
 				if (h > max) {
 					max = h;
 					highestIndex = j;
@@ -96,45 +86,64 @@ public class Stochastic implements Indicator {
 		}
 
 		
-		double close = candles[0].getClose();
+		double close = current.getClose();
 
-		sumlow[0] = close - this.lowestPrice;
-		sumhigh[0] = this.highestPrice - this.lowestPrice;
+		int countIndex = this.unCountedBars();
+		if(countIndex >0) {
+		
+		sumlow.newValue(close - this.lowestPrice);
+		sumhigh.newValue( this.highestPrice - this.lowestPrice);
+		
+		} else {
+			sumlow.setValue(0,close - this.lowestPrice);
+			sumhigh.setValue(0, this.highestPrice - this.lowestPrice);
+		}
 
 		double lsum = 0;
 		double hsum = 0;
 		for (int j = 0; j < slow_period; j++) {
-			lsum = lsum + sumlow[j];
-			hsum = hsum + sumhigh[j];
+			lsum = lsum + sumlow.getValue(j);
+			hsum = hsum + sumhigh.getValue(j);
 		}
 
-		if (hsum == 0)
-			k[0] = 100.0;
-		else {
-			k[0] = lsum * 100 / hsum;
+		if (hsum == 0){
+			if(countIndex >0) {
+			k.newValue(100.0);
+			}else {
+				k.setValue(0,100.0);
+			}
+		}else {
+			if(countIndex >0) {
+			k.newValue(lsum * 100 / hsum);
+			} else {
+				k.setValue(0,lsum * 100 / hsum);
+			}
 		}
 
 		double sum = 0;
 		for (int j = 0; j < d_period; j++) {
-			sum = sum + k[j];
+			sum = sum + k.getValue(j);
 		}
 		// BigDecimal m = new BigDecimal(sum);
 		// BigDecimal n = new BigDecimal(d_period);
 		// BigDecimal signal_curr = m.divide(n, 4, RoundingMode.HALF_UP);
-		signal[0] = sum / d_period;
+		signal.newValue(sum / d_period);
+		
+		if(countIndex >0) {
+			signal.newValue(sum / d_period);
+		} else {
+			signal.setValue(0,sum / d_period);
+		}
 	}
 
-	public void init(TimeSeriseConfig config) {
-		candles = config.getCandles();
+	public void init() {
+		TimeSeriseConfig config = this.getContext();
 		int tCount = config.maxTickCount();
 
-		// signal_line = new EMA(this.signal_period);
-		// signal_line.init(config);
+		k = new BarValue(tCount);
+		signal = new BarValue(tCount);
 
-		k = new double[tCount];
-		signal = new double[tCount];
-
-		sumlow = new double[tCount];
-		sumhigh = new double[tCount];
+		sumlow = new BarValue(tCount);
+		sumhigh = new BarValue(tCount);
 	}
 }
