@@ -29,11 +29,13 @@ public class EMA extends TradeHelper implements Indicator {
 		int bars = config.bars();
 
 		if (countIndex == 0) {
-			if ((bars - countIndex) <= time_period) {
+			int n = bars - countIndex;
+
+			if (n <= time_period) {
 
 				double a = 2 * config.getCandle(countIndex).getClose()
-						+ (bars - 1) * hist.getValue(countIndex + 1);
-				hist.setValue(countIndex, a / (bars + 1));
+						+ (n - 1) * hist.getValue(countIndex + 1);
+				hist.setValue(countIndex, a / (n + 1));
 			} else {
 				double a = 2 * config.getCandle(countIndex).getClose()
 						+ (time_period - 1) * hist.getValue(countIndex + 1);
@@ -42,11 +44,13 @@ public class EMA extends TradeHelper implements Indicator {
 		} else {
 			while (countIndex > 0) {
 
-				if ((bars - countIndex) <= time_period) {
+				int n = bars - countIndex;
+
+				if (n <= time_period) {
 
 					double a = 2 * config.getCandle(countIndex).getClose()
-							+ (bars - 1) * hist.getValue(0);
-					hist.newValue(a / (bars + 1));
+							+ (n - 1) * hist.getValue(0);
+					hist.newValue(a / (n + 1));
 				} else {
 					double a = 2 * config.getCandle(countIndex).getClose()
 							+ (time_period - 1) * hist.getValue(0);

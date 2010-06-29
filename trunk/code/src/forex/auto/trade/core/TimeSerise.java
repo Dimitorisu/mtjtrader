@@ -14,18 +14,14 @@ public class TimeSerise {
 	public final static int FOUR_HOUR = 240 * 60000;
 	public final static int ONE_DAY = 24 * 60 * 60000;
 
-	Candle[] candles = null;
 	private int timeFrame;
-	int candleCount = 0;
-	int counted = 0;
-	int arrayIndex = 0;
+
 	private ArrayList<Indicator> indicators = null;
 	TimeSeriseConfig cfg = null;
 
 	private TimeSerise(int _timeFrame, int _size) {
 		this.timeFrame = _timeFrame;
-		this.arrayIndex = _size - 1;
-		candles = new Candle[_size];
+		Candle[] candles = new Candle[_size];
 		cfg = new TimeSeriseConfig(candles);
 
 	}
@@ -38,31 +34,12 @@ public class TimeSerise {
 		return new TimeSerise(_timeFrame, 2000);
 	}
 
-	public Candle[] getCandles() {
-		int max = 20;
-
-		if (candleCount < max) {
-			max = candleCount;
-		}
-
-		Candle[] ret = new Candle[max];
-		for (int i = 0; i < max; i++) {
-			ret[i] = candles[i];
-		}
-		return ret;
-
-	}
-
-	public Candle getCandles(int index) {
-		return candles[index];
-	}
-	
 	public Candle getCandle(int index) {
-		if(index < candles.length) {
-			return candles[index];
-		} else {
-			return null;
-		}
+		return cfg.getCandle(index);
+	}
+
+	private void newCandle(Candle newOne) {
+		cfg.newCandle(newOne);
 	}
 
 	public long updateCandle(Candle newOne) {
@@ -73,12 +50,10 @@ public class TimeSerise {
 
 		long inputTime = newDiffTime - (8 * 60 * 60000);
 
-		Candle recordNow = candles[0];
+		Candle recordNow = getCandle(0);
 		// System.out.println("recordNow time:"
 		// + new Date(recordNow.getTime()) + ",the input time:"
 		// + new Date(inputTime));
-
-		boolean newTick = false;
 
 		if (recordNow == null) {
 
@@ -88,9 +63,7 @@ public class TimeSerise {
 			newCandel.setClose(newOne.getClose());
 			newCandel.setHigh(newOne.getHigh());
 			newCandel.setLow(newOne.getLow());
-			candles[0] = newCandel;
-			cfg.increaseBar();
-			counted++;
+			newCandle(newCandel);
 
 		} else if (recordNow.getTime() == inputTime) { // mergin
 			// the
@@ -99,16 +72,9 @@ public class TimeSerise {
 			recordNow.setClose(newOne.getClose());
 			recordNow.updateHigh(newOne.getHigh());
 			recordNow.updateLow(newOne.getLow());
-			counted++;
 			// candleCount++;
 
 		} else if (recordNow.getTime() < inputTime) {
-
-			int i = candleCount;
-			while (i >= 1) {
-				candles[i] = candles[i - 1];
-				i--;
-			}
 
 			Candle newCandel = new Candle();
 			newCandel.setTime(inputTime);
@@ -116,12 +82,7 @@ public class TimeSerise {
 			newCandel.setClose(newOne.getClose());
 			newCandel.setHigh(newOne.getHigh());
 			newCandel.setLow(newOne.getLow());
-			candles[0] = newCandel;
-			newTick = true;
-
-			cfg.increaseBar();
-
-			counted++;
+			newCandle(newCandel);
 
 		} else {
 			return -recordNow.getTime();
@@ -168,13 +129,13 @@ public class TimeSerise {
 			// }
 		}
 
-		if (indicators != null) {
-
-			for (Indicator idc : indicators) {
-				idc.update(candleCount, newTick);
-			}
-
-		}
+		// if (indicators != null) {
+		//
+		// for (Indicator idc : indicators) {
+		// idc.update(candleCount, newTick);
+		// }
+		//
+		// }
 
 		return inputTime;
 	}
@@ -187,7 +148,7 @@ public class TimeSerise {
 		int highestIndex = 0;
 		if (type == TradeHelper.PRICE_HIGH) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getHigh();
+				double each = getCandle(i).getHigh();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -195,7 +156,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_OPEN) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getOpen();
+				double each = getCandle(i).getOpen();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -203,7 +164,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_CLOSE) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getClose();
+				double each = getCandle(i).getClose();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -211,7 +172,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_LOW) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getLow();
+				double each = getCandle(i).getLow();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -219,7 +180,7 @@ public class TimeSerise {
 			}
 		}
 
-		return candles[highestIndex];
+		return getCandle(highestIndex);
 	}
 
 	public Candle iLowest(int type, int count, int start) {
@@ -230,7 +191,7 @@ public class TimeSerise {
 		int highestIndex = 0;
 		if (type == TradeHelper.PRICE_LOW) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getLow();
+				double each = getCandle(i).getLow();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -238,7 +199,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_CLOSE) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getClose();
+				double each = getCandle(i).getClose();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -246,7 +207,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_OPEN) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getOpen();
+				double each = getCandle(i).getOpen();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -254,7 +215,7 @@ public class TimeSerise {
 			}
 		} else if (type == TradeHelper.PRICE_HIGH) {
 			for (int i = start; i < end; i++) {
-				double each = candles[i].getHigh();
+				double each = getCandle(i).getHigh();
 				if (each > highest) {
 					highest = each;
 					highestIndex = i;
@@ -262,7 +223,7 @@ public class TimeSerise {
 			}
 		}
 
-		return candles[highestIndex];
+		return cfg.getCandle(highestIndex);
 	}
 
 	public void registerIndicator(Indicator _indicator) {
