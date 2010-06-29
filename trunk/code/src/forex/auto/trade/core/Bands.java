@@ -1,17 +1,16 @@
 package forex.auto.trade.core;
 
-import forex.auto.trade.lib.Candle;
+import forex.auto.trade.TradeHelper;
 
-public class Bands implements Indicator {
+public class Bands extends TradeHelper implements Indicator {
 
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
 	public static int MODE_UPPER = 2;
 	public static int MODE_LOWER = 5;
-	double[] main = null;
-	double[] upper = null;
-	double[] lower = null;
-	Candle[] candles = null;
+	BarValue main = null;
+	BarValue upper = null;
+	BarValue lower = null;
 	int time_period = 20;
 	private int deviation = 2;
 
@@ -27,57 +26,56 @@ public class Bands implements Indicator {
 	public double value(int mode, int shift) {
 
 		if (mode == MODE_MAIN) {
-			return main[shift];
+			return main.getValue(shift);
 		} else if (mode == MODE_UPPER) {
-			return upper[shift];
+			return upper.getValue(shift);
 		} else if (mode == MODE_LOWER) {
-			return lower[shift];
+			return lower.getValue(shift);
 		} else {
 			return 0;
 		}
 
 	}
 
-	public void update(int size, boolean newTick) {
-		int i = size;
-		if (newTick) {
-			
-			while (i >= 1) {
-				main[i] = main[i - 1];
-				upper[i] = upper[i - 1];
-				lower[i] = lower[i - 1];
-				i--;
-			}
-		}
+	public void start() {
+
+		TimeSeriseConfig config = this.getContext();
+		int size = config.bars();
 
 		int period = time_period > size ? size : time_period;
 
 		double sum = 0;
 		for (int j = 0; j < period; j++) {
-			sum += candles[j].getClose();
+			sum += config.getCandle(j).getClose();
 		}
 		double mainValue = sum / period;
 
 		double dsum = 0;
 		for (int j = 0; j < period; j++) {
-			double a = candles[j].getClose() * period - sum;
+			double a = config.getCandle(j).getClose() * period - sum;
 			dsum += a * a;
 		}
 
 		double d = period * period * period;
 		double diff = StrictMath.sqrt(dsum / d) * this.deviation;
 
-		main[0] = mainValue;
-		upper[0] = mainValue + diff;
-		lower[0] = mainValue - diff;
+		if (this.unCountedBars() > 0) {
+			main.newValue(mainValue);
+			upper.newValue(mainValue + diff);
+			lower.newValue(mainValue - diff);
+		} else {
+			main.setValue(0, mainValue);
+			upper.setValue(0, mainValue + diff);
+			lower.setValue(0, mainValue - diff);
+		}
 	}
 
-	public void init(TimeSeriseConfig config) {
-		candles = config.getCandles();
+	public void init() {
+		TimeSeriseConfig config = this.getContext();
 		int tCount = config.maxTickCount();
-		main = new double[tCount];
-		upper = new double[tCount];
-		lower = new double[tCount];
+		main = new BarValue(tCount);
+		upper = new BarValue(tCount);
+		lower = new BarValue(tCount);
 	}
 
 }
