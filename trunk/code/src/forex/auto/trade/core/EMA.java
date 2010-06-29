@@ -1,14 +1,12 @@
 package forex.auto.trade.core;
 
 import forex.auto.trade.TradeHelper;
-import forex.auto.trade.lib.Candle;
 
 public class EMA extends TradeHelper implements Indicator {
 
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
-	double[] hist = null;
-	Candle[] candles = null;
+	BarValue hist = null;
 	int time_period = 9;
 
 	public EMA() {
@@ -20,43 +18,51 @@ public class EMA extends TradeHelper implements Indicator {
 
 	public double value(int shift) {
 
-		return hist[shift];
+		return hist.getValue(shift);
 
 	}
 
 	public void start() {
 		TimeSeriseConfig config = this.getContext();
-		
-		int unCounted = this.unCountedBars();
-		
-		
-		if (unCounted >0) {
-			
-			int bars = config.bars();
-			int start = bars < config.maxTickCount()? bars :config.maxTickCount() ;
-			
-			while (unCounted >= 1) {
-				hist[start] = hist[start - 1];
-				start--;
-				unCounted--;
-			}
-		}
 
-		if (config.bars() <= time_period) {
-			
-			double a = 2 * candles[0].getClose() + (size - 1) * hist[1];
-			hist[0] = a / (size + 1);
+		int countIndex = this.unCountedBars();
+		int bars = config.bars();
+
+		if (countIndex == 0) {
+			if ((bars - countIndex) <= time_period) {
+
+				double a = 2 * config.getCandle(countIndex).getClose()
+						+ (bars - 1) * hist.getValue(countIndex + 1);
+				hist.setValue(countIndex, a / (bars + 1));
+			} else {
+				double a = 2 * config.getCandle(countIndex).getClose()
+						+ (time_period - 1) * hist.getValue(countIndex + 1);
+				hist.setValue(countIndex, a / (time_period + 1));
+			}
 		} else {
-			double a = 2 * candles[0].getClose() + (time_period - 1) * hist[1];
-			hist[0] = a / (time_period + 1);
+			while (countIndex > 0) {
+
+				if ((bars - countIndex) <= time_period) {
+
+					double a = 2 * config.getCandle(countIndex).getClose()
+							+ (bars - 1) * hist.getValue(0);
+					hist.newValue(a / (bars + 1));
+				} else {
+					double a = 2 * config.getCandle(countIndex).getClose()
+							+ (time_period - 1) * hist.getValue(0);
+					hist.newValue(a / (time_period + 1));
+				}
+
+				countIndex--;
+
+			}
 		}
 
 	}
 
 	public void init() {
 		TimeSeriseConfig config = this.getContext();
-		candles = config.getCandles();
 		int tCount = config.maxTickCount();
-		hist = new double[tCount];
+		hist = new BarValue(tCount);
 	}
 }
