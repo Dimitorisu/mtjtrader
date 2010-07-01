@@ -129,15 +129,19 @@ public class TimeSerise {
 			// }
 		}
 
-		// if (indicators != null) {
-		//
-		// for (Indicator idc : indicators) {
-		// idc.update(candleCount, newTick);
-		// }
-		//
-		// }
+		
 
 		return inputTime;
+	}
+	
+	public void start() {
+		 if (indicators != null) {
+
+			for (Indicator idc : indicators) {
+				idc.execute();
+			}
+
+		}
 	}
 
 	public Candle iHighest(int type, int count, int start) {
