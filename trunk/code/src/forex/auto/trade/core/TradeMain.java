@@ -50,10 +50,26 @@ public class TradeMain {
 		TradeService ts = TradeService.getInstance();
 		FilePriceProvider dp = new FilePriceProvider();
 		dp.init();
-		ts.addDataProvider(dp);
+		//ts.addDataProvider(dp);
 		ts.addEa(new MyEA());
+		TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_MIN);
+		EMA ema = new EMA(63);
+		
+		times.registerIndicator(ema);
+		
+		
 		ts.start();
-		ts.run();
+//		ts.run();
+		
+		while (true) {
+			Candle candle = dp.read();
+			if (candle == null) {
+				break;
+			}
+			ts.addData(candle);
+			times.start();
+		}
+
 		ts.stop();
 
 	}

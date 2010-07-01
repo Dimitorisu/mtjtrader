@@ -11,7 +11,7 @@ public class BarValue {
 	public double getValue(int index) {
 		int size = values.length;
 		if (index < size) {
-			int reIndex = ((bars - index - 1) % size);
+			int reIndex = ((bars - index) % size);
 			return values[reIndex];
 		} else {
 			return -1;
@@ -27,9 +27,11 @@ public class BarValue {
 	}
 
 	public void newValue(double newValue) {
+		bars++;
+		
 		int reIndex = bars % values.length;
 		values[reIndex] = newValue;
-		bars++;
+		
 	}
 
 }

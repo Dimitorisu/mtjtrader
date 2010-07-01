@@ -2,12 +2,13 @@ package forex.auto.trade;
 
 import java.util.HashMap;
 
+import forex.auto.trade.core.Indicator;
 import forex.auto.trade.core.MACD;
 import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TimeSeriseConfig;
 import forex.auto.trade.core.TradeService;
 
-public abstract class TradeHelper {
+public abstract class TradeHelper implements Indicator {
 
 	public final static int ONE_MIN = 60000;
 	public final static int FIVE_MIN = 300000;
@@ -44,7 +45,7 @@ public abstract class TradeHelper {
 	}
 	
 	
-	public void onPriceChange() {
+	public void execute() {
 		start();
 		countedBars = tCtx.bars();
 	}

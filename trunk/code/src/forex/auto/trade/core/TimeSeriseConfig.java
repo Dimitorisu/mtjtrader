@@ -29,19 +29,26 @@ public class TimeSeriseConfig {
 	}
 
 	public Candle getCandle(int index) {
+		try {
 		int size = candles.length;
 		if (index < size) {
-			int reIndex = ((bars - index - 1) % size);
+			int reIndex = ((bars - index) % size);
 			return candles[reIndex];
 		} else {
 			return null;
 		}
+		}catch(Exception e) {
+			System.out.println("index:"+ index);
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public void newCandle(Candle newOne) {
+		increaseBar();
 		int reIndex = bars % candles.length;
 		candles[reIndex] = newOne;
-		increaseBar();
+		
 	}
 
 	// public Candle[] getCandles() {
