@@ -21,7 +21,7 @@ public class BarValue {
 	public void setValue(int index, double value) {
 		int size = values.length;
 		if (index < size) {
-			int reIndex = ((bars - index - 1) % size);
+			int reIndex = ((bars - index ) % size);
 			values[reIndex] = value;
 		}
 	}
