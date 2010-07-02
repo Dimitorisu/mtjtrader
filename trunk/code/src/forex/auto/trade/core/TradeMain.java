@@ -1,10 +1,14 @@
 package forex.auto.trade.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import forex.auto.trade.ea.MyEA;
 import forex.auto.trade.lib.Candle;
 
 public class TradeMain {
 
+	private static Log log = LogFactory.getLog(TradeMain.class);
 	private static TradeService ts = null;
 
 	public static void start() {
@@ -50,17 +54,16 @@ public class TradeMain {
 		TradeService ts = TradeService.getInstance();
 		FilePriceProvider dp = new FilePriceProvider();
 		dp.init();
-		//ts.addDataProvider(dp);
+		// ts.addDataProvider(dp);
 		ts.addEa(new MyEA());
-		TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_MIN);
+		TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_HOUR);
 		EMA ema = new EMA(63);
-		
+
 		times.registerIndicator(ema);
-		
-		
+
 		ts.start();
-//		ts.run();
-		
+		// ts.run();
+		long lasttime = 0;
 		while (true) {
 			Candle candle = dp.read();
 			if (candle == null) {
@@ -68,6 +71,14 @@ public class TradeMain {
 			}
 			ts.addData(candle);
 			times.start();
+
+			if (times.getCandle(0).getTime() != lasttime) {
+				if (log.isDebugEnabled()) {
+					System.out.println("canle:" + times.getCandle(1) + ",ema:"
+							+ ema.value(1));
+				}
+				lasttime = times.getCandle(0).getTime();
+			}
 		}
 
 		ts.stop();
