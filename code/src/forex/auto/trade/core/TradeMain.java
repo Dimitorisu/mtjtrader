@@ -56,29 +56,17 @@ public class TradeMain {
 		dp.init();
 		// ts.addDataProvider(dp);
 		ts.addEa(new MyEA());
-		TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_HOUR);
-		EMA ema = new EMA(63);
-
-		times.registerIndicator(ema);
+		
 
 		ts.start();
-		// ts.run();
-		long lasttime = 0;
+		// 
 		while (true) {
 			Candle candle = dp.read();
 			if (candle == null) {
 				break;
 			}
 			ts.addData(candle);
-			times.start();
-
-			if (times.getCandle(0).getTime() != lasttime) {
-				if (log.isDebugEnabled()) {
-					System.out.println("canle:" + times.getCandle(1) + ",ema:"
-							+ ema.value(1));
-				}
-				lasttime = times.getCandle(0).getTime();
-			}
+			ts.run();
 		}
 
 		ts.stop();
