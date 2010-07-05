@@ -91,9 +91,9 @@ public class TradeService {
 			}
 		}
 	}
-	
-	public void addData(Candle candle){
-		
+
+	public void addData(Candle candle) {
+
 		ONE_MIN.updateCandle(candle);
 		FIVE_MIN.updateCandle(candle);
 		FIFTTH_MIN.updateCandle(candle);
@@ -104,31 +104,17 @@ public class TradeService {
 	}
 
 	public void run() {
-		if (log.isInfoEnabled()) {
-			log.info("Starting trade service");
-		}
 
-		while (exit) {
-			Candle candle = priceProvider.read();
-			if (candle == null) {
-				break;
-			}
-			ONE_MIN.updateCandle(candle);
-			FIVE_MIN.updateCandle(candle);
-			FIFTTH_MIN.updateCandle(candle);
-			HALF_HOUR.updateCandle(candle);
-			ONE_HOUR.updateCandle(candle);
-			FOUR_HOUR.updateCandle(candle);
-			ONE_DAY.updateCandle(candle);
+		ONE_MIN.start();
+		FIVE_MIN.start();
+		FIFTTH_MIN.start();
+		HALF_HOUR.start();
+		ONE_HOUR.start();
+		FOUR_HOUR.start();
+		ONE_DAY.start();
 
-			if (ea != null) {
-				ea.start();
-			}
-
-		}
-
-		if (log.isInfoEnabled()) {
-			log.info("end trade service");
+		if (ea != null) {
+			ea.start();
 		}
 	}
 
