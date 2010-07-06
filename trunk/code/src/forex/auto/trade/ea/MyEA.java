@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import forex.auto.trade.TradeHelper;
-import forex.auto.trade.core.EMA;
 import forex.auto.trade.core.MACD;
 import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TradeService;
@@ -12,8 +11,8 @@ import forex.auto.trade.core.TradeService;
 public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
 	private TimeSerise times;
-	private EMA ema;
-
+	private MACD ema;
+	long lasttime = 0;
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
@@ -25,19 +24,19 @@ public class MyEA extends TradeHelper {
 
 		TradeService ts = TradeService.getInstance();
 		times = ts.getTimeSerise(TimeSerise.ONE_HOUR);
-		ema = new EMA(63);
+		ema = new MACD();
 		times.registerIndicator(ema);
 	}
 
 	@Override
 	public void start() {
 
-		long lasttime = 0;
+		
 
 		if (times.getCandle(0).getTime() != lasttime) {
 			if (log.isDebugEnabled()) {
 				System.out.println("canle:" + times.getCandle(1) + ",ema:"
-						+ ema.value(1));
+						+ ema.value(MODE_SIGNAL,1));
 			}
 			lasttime = times.getCandle(0).getTime();
 		}

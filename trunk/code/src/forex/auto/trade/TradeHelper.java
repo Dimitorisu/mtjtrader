@@ -45,14 +45,14 @@ public abstract class TradeHelper implements Indicator {
 	}
 	
 	
-	public void execute() {
-		start();
-		countedBars = tCtx.bars();
-	}
+//	public void execute() {
+//		start();
+//		countedBars = tCtx.bars();
+//	}
 	
 	public int unCountedBars() {
 		
-		return tCtx.bars() - countedBars;
+		return tCtx.getNewBars();
 		
 	}
 	
