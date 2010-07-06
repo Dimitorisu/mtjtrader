@@ -16,15 +16,11 @@ public class TimeSeriseConfig {
 		return candles.length;
 	}
 
-	public int getUpdatedBars() {
+	public int getNewBars() {
 		return updatedBars;
 	}
 
-	public void increaseUpdatedBars() {
-		updatedBars++;
-	}
-
-	public void clearUpdateBars() {
+	public void clearNewBars() {
 		updatedBars = 0;
 	}
 
@@ -56,6 +52,7 @@ public class TimeSeriseConfig {
 	// }
 	//	
 	public void increaseBar() {
+		updatedBars++;
 		bars++;
 	}
 

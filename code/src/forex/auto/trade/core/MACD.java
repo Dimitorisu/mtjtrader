@@ -43,6 +43,8 @@ public class MACD extends TradeHelper implements Indicator {
 
 		fast_line.start();
 		slow_line.start();
+		int sumbars = config.bars() < signal_period ? config.bars()
+				: signal_period;
 
 		int countIndex = this.unCountedBars();
 
@@ -50,24 +52,24 @@ public class MACD extends TradeHelper implements Indicator {
 			macd.setValue(0, fast_line.value(0) - slow_line.value(0));
 
 			double sum = 0;
-			for (int j = 0; j < signal_period; j++) {
+			for (int j = 0; j < sumbars; j++) {
 				sum = sum + macd.getValue(j);
 			}
 			signal.setValue(0, sum / signal_period);
 		} else {
-			int bars = config.bars();
-	
-				int n = bars - countIndex;
-				macd.newValue(fast_line.value(n) - slow_line.value(n));
-				double sum = 0;
-				for (int j = 0; j < signal_period; j++) {
-					sum = sum + macd.getValue(j);
-				}
-				signal.newValue(sum / signal_period);
-			
+
+//			System.out.println("fast_line.value(0) - slow_line.value(0)="
+//					+ (slow_line.value(0)));
+			macd.newValue(fast_line.value(0) - slow_line.value(0));
+
+			double sum = 0;
+			for (int j = 0; j < sumbars; j++) {
+				sum = sum + macd.getValue(j);
+			}
+			signal.newValue(sum / signal_period);
 
 		}
-		
+
 	}
 
 	public void init() {
