@@ -56,15 +56,15 @@ public class MACD extends TradeHelper implements Indicator {
 			signal.setValue(0, sum / signal_period);
 		} else {
 			int bars = config.bars();
-			while (countIndex >= 0) {
+	
 				int n = bars - countIndex;
 				macd.newValue(fast_line.value(n) - slow_line.value(n));
 				double sum = 0;
 				for (int j = 0; j < signal_period; j++) {
-					sum = sum + macd.getValue(n + j);
+					sum = sum + macd.getValue(j);
 				}
 				signal.newValue(sum / signal_period);
-			}
+			
 
 		}
 		
