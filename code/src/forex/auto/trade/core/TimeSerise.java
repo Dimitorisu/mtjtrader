@@ -134,7 +134,6 @@ public class TimeSerise {
 
 	public void start() {
 		if (indicators != null) {
-
 			for (Indicator idc : indicators) {
 				idc.start();
 			}
@@ -142,91 +141,91 @@ public class TimeSerise {
 		cfg.clearNewBars();
 	}
 
-	public Candle iHighest(int type, int count, int start) {
-
-		int end = count + start > count ? count : count + start;
-		double highest = Double.MIN_VALUE;
-
-		int highestIndex = 0;
-		if (type == TradeHelper.PRICE_HIGH) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getHigh();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_OPEN) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getOpen();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_CLOSE) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getClose();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_LOW) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getLow();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		}
-
-		return getCandle(highestIndex);
-	}
-
-	public Candle iLowest(int type, int count, int start) {
-
-		int end = count + start > count ? count : count + start;
-		double highest = Double.MIN_VALUE;
-
-		int highestIndex = 0;
-		if (type == TradeHelper.PRICE_LOW) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getLow();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_CLOSE) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getClose();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_OPEN) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getOpen();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		} else if (type == TradeHelper.PRICE_HIGH) {
-			for (int i = start; i < end; i++) {
-				double each = getCandle(i).getHigh();
-				if (each > highest) {
-					highest = each;
-					highestIndex = i;
-				}
-			}
-		}
-
-		return cfg.getCandle(highestIndex);
-	}
+//	public Candle iHighest(int type, int count, int start) {
+//
+//		int end = count + start > count ? count : count + start;
+//		double highest = Double.MIN_VALUE;
+//
+//		int highestIndex = 0;
+//		if (type == TradeHelper.PRICE_HIGH) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getHigh();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_OPEN) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getOpen();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_CLOSE) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getClose();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_LOW) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getLow();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		}
+//
+//		return getCandle(highestIndex);
+//	}
+//
+//	public Candle iLowest(int type, int count, int start) {
+//
+//		int end = count + start > count ? count : count + start;
+//		double highest = Double.MIN_VALUE;
+//
+//		int highestIndex = 0;
+//		if (type == TradeHelper.PRICE_LOW) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getLow();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_CLOSE) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getClose();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_OPEN) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getOpen();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		} else if (type == TradeHelper.PRICE_HIGH) {
+//			for (int i = start; i < end; i++) {
+//				double each = getCandle(i).getHigh();
+//				if (each > highest) {
+//					highest = each;
+//					highestIndex = i;
+//				}
+//			}
+//		}
+//
+//		return cfg.getCandle(highestIndex);
+//	}
 
 	public void registerIndicator(Indicator _indicator) {
 		if (indicators == null) {
