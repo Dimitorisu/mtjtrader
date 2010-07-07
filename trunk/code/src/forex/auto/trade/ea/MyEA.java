@@ -4,14 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import forex.auto.trade.TradeHelper;
-import forex.auto.trade.core.MACD;
+import forex.auto.trade.core.Stochastic;
 import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TradeService;
 
 public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
 	private TimeSerise times;
-	private MACD ema;
+	private Stochastic ema;
 	long lasttime = 0;
 	@Override
 	public void destroy() {
@@ -24,7 +24,7 @@ public class MyEA extends TradeHelper {
 
 		TradeService ts = TradeService.getInstance();
 		times = ts.getTimeSerise(TimeSerise.ONE_HOUR);
-		ema = new MACD();
+		ema = new Stochastic();
 		times.registerIndicator(ema);
 	}
 
