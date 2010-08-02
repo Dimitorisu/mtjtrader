@@ -41,6 +41,8 @@ public class Stochastic extends TradeHelper implements Indicator {
 	}
 
 	public void start() {
+		
+		
 		// already load new candle.index recalculate.
 
 		TimeSeriseConfig config = this.getContext();
@@ -51,8 +53,7 @@ public class Stochastic extends TradeHelper implements Indicator {
 		double highestPrice = config.iHighest(PRICE_HIGH, k_period, 0)
 				.getHigh();
 
-		System.out.println("curr" + current +",high:" + config.iLowest(PRICE_LOW, k_period, 0));
-		
+	
 		double close = current.getClose();
 
 		int countIndex = this.unCountedBars();
@@ -69,10 +70,12 @@ public class Stochastic extends TradeHelper implements Indicator {
 		double lsum = 0;
 		double hsum = 0;
 		int sp_end = slow_period > bars ? bars : slow_period;
+		
 		for (int j = 0; j < sp_end; j++) {
 			lsum = lsum + sumlow.getValue(j);
 			hsum = hsum + sumhigh.getValue(j);
 		}
+		
 
 		if (hsum == 0) {
 			if (countIndex > 0) {
@@ -93,10 +96,6 @@ public class Stochastic extends TradeHelper implements Indicator {
 		for (int j = 0; j < dp_end; j++) {
 			sum = sum + k.getValue(j);
 		}
-		// BigDecimal m = new BigDecimal(sum);
-		// BigDecimal n = new BigDecimal(d_period);
-		// BigDecimal signal_curr = m.divide(n, 4, RoundingMode.HALF_UP);
-		signal.newValue(sum / d_period);
 
 		if (countIndex > 0) {
 			signal.newValue(sum / d_period);
