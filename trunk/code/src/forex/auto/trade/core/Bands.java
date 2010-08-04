@@ -39,7 +39,7 @@ public class Bands extends TradeHelper implements Indicator {
 
 	public void start() {
 
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int size = config.bars();
 
 		int period = time_period > size ? size : time_period;
@@ -59,7 +59,7 @@ public class Bands extends TradeHelper implements Indicator {
 		double d = period * period * period;
 		double diff = StrictMath.sqrt(dsum / d) * this.deviation;
 
-		if (this.unCountedBars() > 0) {
+		if (config.unCountedBars() > 0) {
 			main.newValue(mainValue);
 			upper.newValue(mainValue + diff);
 			lower.newValue(mainValue - diff);
@@ -71,7 +71,7 @@ public class Bands extends TradeHelper implements Indicator {
 	}
 
 	public void init() {
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int tCount = config.maxTickCount();
 		main = new BarValue(tCount);
 		upper = new BarValue(tCount);

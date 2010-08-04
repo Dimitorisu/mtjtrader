@@ -39,14 +39,14 @@ public class MACD extends TradeHelper implements Indicator {
 	}
 
 	public void start() {
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 
 		fast_line.start();
 		slow_line.start();
 		int sumbars = config.bars() < signal_period ? config.bars()
 				: signal_period;
 
-		int countIndex = this.unCountedBars();
+		int countIndex = config.unCountedBars();
 
 		if (countIndex == 0) {
 			macd.setValue(0, fast_line.value(0) - slow_line.value(0));
@@ -73,7 +73,7 @@ public class MACD extends TradeHelper implements Indicator {
 	}
 
 	public void init() {
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int tCount = config.maxTickCount();
 
 		fast_line = new EMA(this.fast_ema_period);

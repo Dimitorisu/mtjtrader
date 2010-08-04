@@ -9,7 +9,6 @@ import forex.auto.trade.lib.Candle;
 public class TradeService {
 
 	private static Log log = LogFactory.getLog(TradeService.class);
-	private PriceProvider priceProvider;
 	volatile boolean exit = true;
 	int candleCount = 1440;
 
@@ -74,10 +73,6 @@ public class TradeService {
 		return ts;
 	}
 
-	public void addDataProvider(PriceProvider _priceProvider) {
-		this.priceProvider = _priceProvider;
-
-	}
 
 	public void addData(int timeFrame, Candle c) {
 		TimeSerise ts = getTimeSerise(timeFrame);
@@ -102,6 +97,12 @@ public class TradeService {
 		FOUR_HOUR.updateCandle(candle);
 		ONE_DAY.updateCandle(candle);
 	}
+	
+	public void addEa(MyEA myEA) {
+
+		this.ea = myEA;
+	}
+
 
 	public void run() {
 
@@ -118,9 +119,5 @@ public class TradeService {
 		}
 	}
 
-	public void addEa(MyEA myEA) {
-
-		this.ea = myEA;
-	}
 
 }
