@@ -14,6 +14,7 @@ public class TradeMain {
 	public static void start() {
 		ts = TradeService.getInstance();
 		ts.addEa(new MyEA());
+		ts.start();
 	}
 
 	public static int syncData(long time, double open, double low, double high,
@@ -55,7 +56,7 @@ public class TradeMain {
 		FilePriceProvider dp = new FilePriceProvider();
 		dp.init();
 		// ts.addDataProvider(dp);
-		ts.addEa(new MyEA());
+	
 		
 
 		ts.start();

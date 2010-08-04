@@ -1,12 +1,7 @@
 package forex.auto.trade;
 
-import java.util.HashMap;
-
 import forex.auto.trade.core.Indicator;
-import forex.auto.trade.core.MACD;
-import forex.auto.trade.core.TimeSerise;
-import forex.auto.trade.core.TimeSeriseConfig;
-import forex.auto.trade.core.TradeService;
+import forex.auto.trade.core.TimeSeriseContext;
 
 public abstract class TradeHelper implements Indicator {
 
@@ -26,8 +21,7 @@ public abstract class TradeHelper implements Indicator {
 	public static int MODE_MAIN = 0;
 	public static int MODE_SIGNAL = 1;
 
-	TimeSeriseConfig tCtx = null;
-	private int countedBars =0;
+	TimeSeriseContext tCtx = null;
 	
 	public abstract void start();
 
@@ -36,7 +30,7 @@ public abstract class TradeHelper implements Indicator {
 	public void destroy() {};
 	
 	
-	public void init(TimeSeriseConfig config) {
+	public void init(TimeSeriseContext config) {
 		
 		tCtx = config;
 		
@@ -50,18 +44,15 @@ public abstract class TradeHelper implements Indicator {
 //		countedBars = tCtx.bars();
 //	}
 	
-	public int unCountedBars() {
-		
-		return tCtx.getNewBars();
-		
-	}
 	
 	
-	public TimeSeriseConfig getContext() {
+	
+	public TimeSeriseContext getContext() {
 		return tCtx;
 	}
 	
 	
+	/*
 	private static HashMap<IndicatorKey, MACD> macd = new HashMap<IndicatorKey, MACD>();
 
 	public static double iMACD(String symbol, int timeframe,
@@ -82,10 +73,7 @@ public abstract class TradeHelper implements Indicator {
 		}
 		return macdI.value(mode, shift);
 	}
+	*/
 	
-	public static TimeSerise getTimeSerise(int timeframe) {
-		TradeService trader = TradeService.getInstance();
-		TimeSerise ts = trader.getTimeSerise(timeframe);
-		return ts;
-	}
+	
 }

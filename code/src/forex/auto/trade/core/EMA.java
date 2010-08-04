@@ -25,9 +25,9 @@ public class EMA extends TradeHelper  {
 	public void start() {
 		
 		
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 
-		int countIndex = this.unCountedBars();
+		int countIndex = config.unCountedBars();
 		int bars = config.bars();
 
 		if (countIndex == 0) {
@@ -73,7 +73,7 @@ public class EMA extends TradeHelper  {
 	}
 
 	public void init() {
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int tCount = config.maxTickCount();
 		hist = new BarValue(tCount);
 	}

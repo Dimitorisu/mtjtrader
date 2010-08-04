@@ -15,7 +15,7 @@ public class MyEA extends TradeHelper {
 	long lasttime = 0;
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
+		
 
 	}
 

@@ -3,13 +3,13 @@ package forex.auto.trade.core;
 import forex.auto.trade.TradeHelper;
 import forex.auto.trade.lib.Candle;
 
-public class TimeSeriseConfig {
+public class TimeSeriseContext {
 
 	Candle[] candles;
 	int bars = 0;
-	int updatedBars = 0;
+	int unCountedBars = 0;
 
-	public TimeSeriseConfig(Candle[] _candles) {
+	public TimeSeriseContext(Candle[] _candles) {
 		this.candles = _candles;
 	}
 
@@ -17,12 +17,12 @@ public class TimeSeriseConfig {
 		return candles.length;
 	}
 
-	public int getNewBars() {
-		return updatedBars;
+	public int unCountedBars() {
+		return unCountedBars;
 	}
 
-	public void clearNewBars() {
-		updatedBars = 0;
+	public void countedBars() {
+		unCountedBars = 0;
 	}
 
 	public Candle getCandle(int index) {
@@ -35,7 +35,7 @@ public class TimeSeriseConfig {
 				return null;
 			}
 		} catch (Exception e) {
-			System.out.println("index:" + index);
+			System.err.println("index:" + index);
 			e.printStackTrace();
 		}
 		return null;
@@ -53,7 +53,7 @@ public class TimeSeriseConfig {
 	// }
 	//	
 	public void increaseBar() {
-		updatedBars++;
+		unCountedBars++;
 		bars++;
 	}
 
@@ -150,5 +150,10 @@ public class TimeSeriseConfig {
 
 		return getCandle(highestIndex);
 	}
-
+	
+	public static TimeSerise getTimeSerise(int timeframe) {
+		TradeService trader = TradeService.getInstance();
+		TimeSerise ts = trader.getTimeSerise(timeframe);
+		return ts;
+	}
 }

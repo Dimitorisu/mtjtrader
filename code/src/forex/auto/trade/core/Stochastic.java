@@ -45,7 +45,7 @@ public class Stochastic extends TradeHelper implements Indicator {
 		
 		// already load new candle.index recalculate.
 
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int bars = config.bars();
 		// signal_line.update(size);
 		Candle current = config.getCandle(0);
@@ -56,7 +56,7 @@ public class Stochastic extends TradeHelper implements Indicator {
 	
 		double close = current.getClose();
 
-		int countIndex = this.unCountedBars();
+		int countIndex = config.unCountedBars();
 		if (countIndex > 0) {
 
 			sumlow.newValue(close - lowestPrice);
@@ -105,7 +105,7 @@ public class Stochastic extends TradeHelper implements Indicator {
 	}
 
 	public void init() {
-		TimeSeriseConfig config = this.getContext();
+		TimeSeriseContext config = this.getContext();
 		int tCount = config.maxTickCount();
 
 		k = new BarValue(tCount);
