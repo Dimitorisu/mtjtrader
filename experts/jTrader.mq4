@@ -20,6 +20,10 @@ int init()
    if(retcode !=0) {
       Print("Start JVM failed! Returned value is ",retcode);
    }
+   
+   int bars = iBars( NULL, PERIOD_D1);
+   lastSyncTime=  iTime(NULL,PERIOD_D1,bars);
+   syncData(PERIOD_D1);
 //----
    return(0);
   }
@@ -54,7 +58,8 @@ int syncData(int timeframe) {
 
   
    int lastBar = iBarShift(NULL,timeframe,lastSyncTime,true);
-   if(lastBar !=0) {
+   
+   if(lastBar != -1) {
       for(int i=lastBar;i<=0;i++) {
             datetime time = iTime(NULL,timeframe,i);
             double closePrice = iClose(NULL,timeframe,i);
@@ -63,9 +68,13 @@ int syncData(int timeframe) {
             double openPrice = iOpen(NULL,timeframe,i);
          doSyncData(TimeSeconds(time),openPrice,lowPrice,highPrice,closePrice);
       }
-   
+   } else {
+      return -1;
    }
    
-   int now = iTime(NULL, PERIOD_M1, 0);
+   
+   int now = iTime(NULL, timeframe, 0);
    lastSyncTime= now;
+   
+   return 0;
 }
