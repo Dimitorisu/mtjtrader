@@ -24,6 +24,13 @@ int init()
    int bars = iBars( NULL, PERIOD_D1);
    lastSyncTime=  iTime(NULL,PERIOD_D1,bars);
    syncData(PERIOD_D1);
+   syncData(PERIOD_H4);
+   syncData(PERIOD_H1);
+   syncData(PERIOD_M30);
+   syncData(PERIOD_M15);
+   syncData(PERIOD_M5);
+   syncData(PERIOD_M1);
+   
 //----
    return(0);
   }
@@ -43,6 +50,9 @@ int deinit()
 int start()
   {
   
+   int lastBar = iBarShift(NULL,PERIOD_M1,lastSyncTime,true);
+   syncData(PERIOD_M1,lastBar);
+   
    
 //----
    int cmd = doTrade(1.2);
@@ -54,13 +64,14 @@ int start()
   }
 //+------------------------------------------------------------------+
 
-int syncData(int timeframe) {
+int syncData(int timeframe,int startBar) {
 
-  
-   int lastBar = iBarShift(NULL,timeframe,lastSyncTime,true);
+   int startBar = iBars( NULL, timeframe);
+   
    
    if(lastBar != -1) {
-      for(int i=lastBar;i<=0;i++) {
+   
+      for(int i=startBar;i<=0;i++) {
             datetime time = iTime(NULL,timeframe,i);
             double closePrice = iClose(NULL,timeframe,i);
             double highPrice = iHigh(NULL,timeframe,i);
