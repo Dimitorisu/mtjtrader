@@ -3,3 +3,4 @@ LIBRARY libjtrade.dll
 EXPORTS startJavaVM
         cleanupVM
         doTrade
+        syncData

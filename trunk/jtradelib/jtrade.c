@@ -23,8 +23,6 @@
 #define _launcher_debug 0
 #define JRE_KEY	    "Software\\JavaSoft\\Java Runtime Environment"
 
-
-
 static jobject objTradeService;
 static JNIEnv *env;
 static JavaVM *jvm;
@@ -32,19 +30,19 @@ static HINSTANCE hInstance;
 static jmethodID runMethod = NULL;
 static int jvmState = -1;
 
-typedef jint (JNICALL *CreateJavaVM_t)(JavaVM **pvm, void **env, void *args);
+typedef jint(JNICALL *CreateJavaVM_t)
+(JavaVM **pvm, void **env, void *args);
 
 static jstring newJavaString(JNIEnv *env, char * str);
 static char* JNI_GetStringChars(JNIEnv *env, jstring str);
 static jboolean GetStringFromRegistry(HKEY key, const char *name, char *buf,
 		jint bufsize);
 static jboolean GetPublicJREHome(char *buf, jint bufsize);
- #pragma   comment(lib,   "shlwapi.lib.")
-EXPORT void __stdcall HelloWorld (char* msg)
-{
-    MessageBox (0, msg, "Hi", MB_ICONINFORMATION);
-}
+#pragma   comment(lib,   "shlwapi.lib.")
 
+EXPORT void __stdcall showMsg(char* msg) {
+	MessageBox(0, msg, "Hi", MB_ICONINFORMATION);
+}
 
 EXPORT int __stdcall startJavaVM() {
 
@@ -56,8 +54,8 @@ EXPORT int __stdcall startJavaVM() {
 	char jre_path[MAXPATHLEN];
 	char tmpbuf[MAXPATHLEN];
 	CreateJavaVM_t funCreateJavaVM;
-    jclass javaClass;
-	
+	jclass javaClass;
+
 	JavaVMInitArgs vm_args;
 	JavaVMOption options[3];
 
@@ -74,11 +72,11 @@ EXPORT int __stdcall startJavaVM() {
 	GetPublicJREHome(jre_path, bsize);
 	//加载JVM.DLL动态库
 
-	strcpy_s(tmpbuf,MAXPATHLEN, jre_path);
-	strcat_s(tmpbuf,MAXPATHLEN, "\\bin\\server\\jvm.dll");
+	strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
+	strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\server\\jvm.dll");
 	if ((PathFileExists(tmpbuf)) != 1) {
-		strcpy_s(tmpbuf,MAXPATHLEN, jre_path);
-		strcat_s(tmpbuf,MAXPATHLEN, "\\bin\\client\\jvm.dll");
+		strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
+		strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\client\\jvm.dll");
 		if ((PathFileExists(tmpbuf)) != 1) {
 			fprintf(stderr, "Load jvm.dll faild! Path:%s\n", tmpbuf);
 			return -3;
@@ -90,19 +88,18 @@ EXPORT int __stdcall startJavaVM() {
 		return -2;
 	}
 
-	funCreateJavaVM =
-	(CreateJavaVM_t)GetProcAddress(hInstance, "JNI_CreateJavaVM");
+	funCreateJavaVM = (CreateJavaVM_t) GetProcAddress(hInstance,
+			"JNI_CreateJavaVM");
 	//取得里面的JNI_CreateJavaVM函数指针
 
 	//调用JNI_CreateJavaVM创建虚拟机
 	res = (*funCreateJavaVM)(&jvm, (void**) &env, &vm_args);
 	if (res < 0) {
-		puts("JVM create faild!\n");
+		puts("JVM create failed!\n");
 		return res;
 	}
 	//查找test.Demo类，返回JAVA类的CLASS对象
-	javaClass = (*env)->FindClass(env,
-			"com/mt4/connection/TraderService");
+	javaClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
 	if (javaClass != NULL) {
 		//根据类的CLASS对象获取该类的实例
 
@@ -112,18 +109,27 @@ EXPORT int __stdcall startJavaVM() {
 		objTradeService = (*env)->NewObject(env, javaClass, mainConstructor);
 
 		//获取类中的方法，最后一个参数是方法的签名，通过javap -s -p 文件名可以获得
-		runMethod = (*env)->GetMethodID(env, javaClass, "startTrade",
-				"(D)Ljava/lang/String;");
-		if (runMethod == NULL) {
-			puts("JVM create faild! javaClass not found.\n");
+
+
+		jmethodID startMethod = NULL;
+		startMethod = (*env)->GetMethodID(env, javaClass, "start", "()V");
+		if (startMethod != NULL) {
+
+			(*env)->CallStaticVoidMethod(env, javaClass, startMethod);
+			showMsg("call start finished!");
 		}
+
+		runMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(JDDDD)I");
+		if (runMethod == NULL) {
+			puts("JVM create failed! javaClass not found.\n");
+		}
+
 	} else {
-		puts("JVM create faild! javaClass not found.\n");
+		puts("JVM create failed! javaClass not found.\n");
 	}
 
-
 	jvmState = 0;
-HelloWorld ("JVM started");
+	showMsg("JVM started");
 	return 0;
 }
 
@@ -131,62 +137,83 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 
 	jclass systemClass = NULL;
 	jmethodID exitMethod = NULL;
-    JNIEnv * localEnv = env;
-    (*jvm)->AttachCurrentThread(jvm, (void**)&localEnv, NULL);
-	
+	JNIEnv * localEnv = env;
+	(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 
 	(*env)->DeleteLocalRef(env, objTradeService);
-	systemClass = (*env)->FindClass(env, "com/mt4/connection/TraderService");
+	systemClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
 	if (systemClass != NULL) {
-		exitMethod
-				= (*env)->GetStaticMethodID(env, systemClass, "exit", "()V");
+		exitMethod = (*env)->GetStaticMethodID(env, systemClass, "stop", "()V");
 		if (exitMethod != NULL) {
 
 			(*env)->CallStaticVoidMethod(env, systemClass, exitMethod);
- HelloWorld ("call exit finished!");
+			showMsg("call exit finished!");
 		}
-		
+
 	}
 	if ((*env)->ExceptionOccurred(env)) {
 		(*env)->ExceptionDescribe(env);
 		(*env)->ExceptionClear(env);
 	}
 
-	
-
-	
-    (*jvm)->DestroyJavaVM(jvm);
-jvmState =-1;
+	(*jvm)->DestroyJavaVM(jvm);
+	jvmState = -1;
 	puts("End call java."); // prints !!!Hello World!!!
 
 }
 
 EXPORT void __stdcall doTrade(double ask) {
 	int cmd = 0;
-    JNIEnv * localEnv = env;
-	 if(jvmState !=0) {        
-          HelloWorld ("JVM is not start!\n");
-		  return;
-      }    
-          
-    
-	
+	JNIEnv * localEnv = env;
+	if (jvmState != 0) {
+		showMsg("JVM is not start!\n");
+		return;
+	}
+
 	if (runMethod != NULL) {
 		jstring msg;
 		char* ret;
-		(*jvm)->AttachCurrentThread(jvm, (void**)&localEnv, NULL);      
+		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 		//构造参数并调用对象的方法
 		//jstring arg = newJavaString(env, szTest);
 
-		msg = (jstring) (*localEnv)->CallObjectMethod(localEnv, objTradeService,
+		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
 				runMethod, ask);
-		ret = (char*)JNI_GetStringChars(localEnv, msg);
+		ret = (char*) JNI_GetStringChars(localEnv, msg);
 		(*localEnv)->DeleteLocalRef(localEnv, msg);
-         HelloWorld (ret);
-	(*jvm)->DetachCurrentThread(jvm);      
+		showMsg(ret);
+		(*jvm)->DetachCurrentThread(jvm);
 
 	} else {
-		HelloWorld ("run Method is null");
+		showMsg("run Method is null");
+	}
+}
+
+EXPORT void __stdcall syncData(long time, double open, double high, double low,
+		double close) {
+	int cmd = 0;
+	JNIEnv * localEnv = env;
+	if (jvmState != 0) {
+		showMsg("JVM is not start!\n");
+		return;
+	}
+
+	if (runMethod != NULL) {
+		jstring msg;
+		char* ret;
+		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+		//构造参数并调用对象的方法
+		//jstring arg = newJavaString(env, szTest);
+
+		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
+				runMethod, ask);
+		ret = (char*) JNI_GetStringChars(localEnv, msg);
+		(*localEnv)->DeleteLocalRef(localEnv, msg);
+		showMsg(ret);
+		(*jvm)->DetachCurrentThread(jvm);
+
+	} else {
+		showMsg("run Method is null");
 	}
 }
 
