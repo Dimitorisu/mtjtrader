@@ -16,6 +16,10 @@ public class TradeMain {
 		ts.addEa(new MyEA());
 		ts.start();
 	}
+	
+	public static void stop() {
+		
+	}
 
 	public static int syncData(long time, double open, double low, double high,
 			double close) {
