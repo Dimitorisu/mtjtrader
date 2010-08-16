@@ -102,19 +102,16 @@ EXPORT int __stdcall startJavaVM() {
 	javaClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
 	if (javaClass != NULL) {
 		//根据类的CLASS对象获取该类的实例
-
+		jmethodID startMethod = NULL;
 		jmethodID mainConstructor = (*env)->GetMethodID(env, javaClass,
 				"<init>", "()V");
 
 		objTradeService = (*env)->NewObject(env, javaClass, mainConstructor);
 
-		//获取类中的方法，最后一个参数是方法的签名，通过javap -s -p 文件名可以获得
-
-
-		jmethodID startMethod = NULL;
-		startMethod = (*env)->GetMethodID(env, javaClass, "start", "()V");
+		startMethod = (*env)->GetMethodID(env, javaClass,
+				"start", "()V");
+		
 		if (startMethod != NULL) {
-
 			(*env)->CallStaticVoidMethod(env, javaClass, startMethod);
 			showMsg("call start finished!");
 		}
@@ -123,6 +120,7 @@ EXPORT int __stdcall startJavaVM() {
 		if (runMethod == NULL) {
 			puts("JVM create failed! javaClass not found.\n");
 		}
+
 
 	} else {
 		puts("JVM create failed! javaClass not found.\n");
@@ -206,7 +204,7 @@ EXPORT void __stdcall syncData(long time, double open, double high, double low,
 		//jstring arg = newJavaString(env, szTest);
 
 		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
-				runMethod, ask);
+				runMethod, open);
 		ret = (char*) JNI_GetStringChars(localEnv, msg);
 		(*localEnv)->DeleteLocalRef(localEnv, msg);
 		showMsg(ret);
