@@ -18,8 +18,8 @@
  #import "ExpertSample.dll"
    int startJavaVM();
    void cleanupVM(int exitCode);
-   void doTrade(double ask);
-   void HelloWorld (string msg);
+   int doTrade(double ask,double bid);
+   int doSyncData(int time, double open, double high, double low, double close);
 // #import "my_expert.dll"
 //   int      ExpertRecalculate(int wParam,int lParam);
 // #import

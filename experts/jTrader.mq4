@@ -22,14 +22,25 @@ int init()
    }
    
    int bars = iBars( NULL, PERIOD_D1);
-   lastSyncTime=  iTime(NULL,PERIOD_D1,bars);
-   syncData(PERIOD_D1);
-   syncData(PERIOD_H4);
-   syncData(PERIOD_H1);
-   syncData(PERIOD_M30);
-   syncData(PERIOD_M15);
-   syncData(PERIOD_M5);
-   syncData(PERIOD_M1);
+   syncData(PERIOD_D1,bars);
+   
+   bars = iBars( NULL, PERIOD_H4);
+   syncData(PERIOD_H4,bars);
+   
+   bars = iBars( NULL, PERIOD_H1);
+   syncData(PERIOD_H1,bars);
+   
+   bars = iBars( NULL, PERIOD_M30);
+   syncData(PERIOD_M30,bars);
+   
+   bars = iBars( NULL, PERIOD_M15);
+   syncData(PERIOD_M15,bars);
+   
+   bars = iBars( NULL, PERIOD_M5);
+   syncData(PERIOD_M5,bars);
+   
+   bars = iBars( NULL, PERIOD_M1);
+   syncData(PERIOD_M1,bars);
    
 //----
    return(0);
@@ -55,23 +66,18 @@ int start()
    
    
 //----
-   int cmd = doTrade(1.2);
-	while (cmd != 0) {
-		cmd = doTrade(1.2);
-	}
+   int cmd = doTrade(Ask,Bid);
+
 //----
    return(0);
   }
 //+------------------------------------------------------------------+
 
-int syncData(int timeframe,int startBar) {
+int syncData(int timeframe,int lastBar) {
 
-   int startBar = iBars( NULL, timeframe);
-   
-   
    if(lastBar != -1) {
    
-      for(int i=startBar;i<=0;i++) {
+      for(int i=lastBar;i<=0;i++) {
             datetime time = iTime(NULL,timeframe,i);
             double closePrice = iClose(NULL,timeframe,i);
             double highPrice = iHigh(NULL,timeframe,i);
