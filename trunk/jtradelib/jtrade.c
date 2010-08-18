@@ -27,7 +27,8 @@ static jobject objTradeService;
 static JNIEnv *env;
 static JavaVM *jvm;
 static HINSTANCE hInstance;
-static jmethodID runMethod = NULL;
+static jmethodID syncDataMethod = NULL;
+static jmethodID tradeMethod = NULL;
 static int jvmState = -1;
 
 typedef jint(JNICALL *CreateJavaVM_t)
@@ -61,7 +62,7 @@ EXPORT int __stdcall startJavaVM() {
 
 	options[0].optionString = "-Djava.compiler=NONE";
 	options[1].optionString
-			= "-Djava.class.path=.;D:\\java_workspace\\mt4\\bin";
+			= "-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\code\\commons-logging-1.0.4.jar";
 	options[2].optionString = "-verbose:NONE";
 
 	vm_args.version = JNI_VERSION_1_4;
@@ -116,11 +117,15 @@ EXPORT int __stdcall startJavaVM() {
 			showMsg("call start finished!");
 		}
 
-		runMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(JDDDD)I");
-		if (runMethod == NULL) {
+		syncDataMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(IDDDD)I");
+		if (syncDataMethod == NULL) {
 			puts("JVM create failed! javaClass not found.\n");
 		}
 
+		tradeMethod = (*env)->GetMethodID(env, javaClass, "doTrade", "(DD)I");
+		if (tradeMethod == NULL) {
+			puts("JVM create failed! javaClass not found.\n");
+		}
 
 	} else {
 		puts("JVM create failed! javaClass not found.\n");
@@ -160,7 +165,7 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 
 }
 
-EXPORT void __stdcall doTrade(double ask) {
+EXPORT void __stdcall doTrade(double ask,double bid) {
 	int cmd = 0;
 	JNIEnv * localEnv = env;
 	if (jvmState != 0) {
@@ -168,7 +173,7 @@ EXPORT void __stdcall doTrade(double ask) {
 		return;
 	}
 
-	if (runMethod != NULL) {
+	if (tradeMethod != NULL) {
 		jstring msg;
 		char* ret;
 		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
@@ -176,7 +181,7 @@ EXPORT void __stdcall doTrade(double ask) {
 		//jstring arg = newJavaString(env, szTest);
 
 		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
-				runMethod, ask);
+				tradeMethod, ask);
 		ret = (char*) JNI_GetStringChars(localEnv, msg);
 		(*localEnv)->DeleteLocalRef(localEnv, msg);
 		showMsg(ret);
@@ -187,7 +192,7 @@ EXPORT void __stdcall doTrade(double ask) {
 	}
 }
 
-EXPORT void __stdcall syncData(long time, double open, double high, double low,
+EXPORT void __stdcall doSyncData(int time, double open, double high, double low,
 		double close) {
 	int cmd = 0;
 	JNIEnv * localEnv = env;
@@ -196,7 +201,7 @@ EXPORT void __stdcall syncData(long time, double open, double high, double low,
 		return;
 	}
 
-	if (runMethod != NULL) {
+	if (syncDataMethod != NULL) {
 		jstring msg;
 		char* ret;
 		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
@@ -204,7 +209,7 @@ EXPORT void __stdcall syncData(long time, double open, double high, double low,
 		//jstring arg = newJavaString(env, szTest);
 
 		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
-				runMethod, open);
+				syncDataMethod, time,open,high,low,close);
 		ret = (char*) JNI_GetStringChars(localEnv, msg);
 		(*localEnv)->DeleteLocalRef(localEnv, msg);
 		showMsg(ret);
