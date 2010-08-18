@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="GBK"?>
+<project default="all" name="forex.auto.trade-0.1" basedir=".">
+
+	<property name="src.home" value="." />
+	<property name="mt4.experts.home" value="D:\Program Files\FX Solutions Australia - MetaTrader\experts" />
+	<property name="dist.home" value="dist" />
+
+	<target name="all">
+		<!-- 拷贝具体的配置文件 -->
+
+		<copy todir="${mt4.experts.home}" overwrite="true" flatten="false">
+			<fileset dir="${src.home}\experts">
+				<include name="**\*.mq4" />
+			</fileset>
+		</copy>
+
+		<copy todir="${mt4.experts.home}\libraries" overwrite="true" flatten="false">
+			<fileset dir="${src.home}\jtrade\Release">
+				<include name="**\*.dll" />
+			</fileset>
+		</copy>
+
+		<copy todir="${mt4.experts.home}\include" overwrite="true" flatten="false">
+			<fileset dir="${src.home}\experts\include">
+				<include name="**\*.mqh" />
+			</fileset>
+		</copy>
+
+	</target>
+
+
+
+</project>
+
