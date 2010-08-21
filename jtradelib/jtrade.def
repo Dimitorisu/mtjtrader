@@ -1,0 +1,6 @@
+LIBRARY "jtrade.dll"
+
+EXPORTS startJavaVM
+        cleanupVM
+        doTrade
+        doSyncData
