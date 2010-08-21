@@ -1,14 +1,15 @@
 /*
- ============================================================================
- Name        : startjvm.c
- Author      : liujiang
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
+============================================================================
+Name        : startjvm.c
+Author      : liujiang
+Version     :
+Copyright   : Your copyright notice
+Description : Hello World in C, Ansi-style
+============================================================================
+*/
 
 #include <windows.h>
+#include <winnt.h>
 #include "winbase.h"
 #include <io.h>
 #include "jni.h"
@@ -23,7 +24,7 @@
 #define _launcher_debug 0
 #define JRE_KEY	    "Software\\JavaSoft\\Java Runtime Environment"
 
-static jobject objTradeService;
+static jobject objTradeService = NULL;
 static JNIEnv *env;
 static JavaVM *jvm;
 static HINSTANCE hInstance;
@@ -32,20 +33,80 @@ static jmethodID tradeMethod = NULL;
 static int jvmState = -1;
 
 typedef jint(JNICALL *CreateJavaVM_t)
-(JavaVM **pvm, void **env, void *args);
+	(JavaVM **pvm, void **env, void *args);
 
 static jstring newJavaString(JNIEnv *env, char * str);
 static char* JNI_GetStringChars(JNIEnv *env, jstring str);
 static jboolean GetStringFromRegistry(HKEY key, const char *name, char *buf,
-		jint bufsize);
+	jint bufsize);
 static jboolean GetPublicJREHome(char *buf, jint bufsize);
 #pragma   comment(lib,   "shlwapi.lib.")
 
-EXPORT void __stdcall showMsg(char* msg) {
+void showMsg(char* msg) {
 	MessageBox(0, msg, "Hi", MB_ICONINFORMATION);
 }
 
-EXPORT int __stdcall startJavaVM() {
+void initJavaService() {
+	jclass javaClass;
+
+	//查找test.Demo类，返回JAVA类的CLASS对象
+	javaClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
+	if (javaClass != NULL) {
+		//根据类的CLASS对象获取该类的实例
+		jmethodID startMethod = NULL;
+
+		jmethodID mainConstructor = (*env)->GetMethodID(env, javaClass,
+			"<init>", "()V");
+
+		objTradeService = (*env)->NewObject(env, javaClass, mainConstructor);
+
+		startMethod = (*env)->GetMethodID(env, javaClass,
+			"start", "()V");
+
+		if (startMethod != NULL) {
+			JNIEnv * localEnv = env;
+
+			(*env)->CallVoidMethod(env, objTradeService,startMethod);
+
+			showMsg("call start finished!");
+		}
+
+		syncDataMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(IDDDD)I");
+		if (syncDataMethod == NULL) {
+			showMsg("JVM create failed! syncData not found.\n");
+
+		}
+
+		tradeMethod = (*env)->GetMethodID(env, javaClass, "doTrade", "(DD)I");
+		if (tradeMethod == NULL) {
+			showMsg("JVM create failed! doTrade not found.\n");
+
+		}
+
+	} else {
+		showMsg("JVM create failed! javaClass not found.\n");
+	}
+
+
+
+}
+
+/*
+int getJVM() {
+
+if(JNI_GetCreatedJavaVMs(&jvm, 1, NULL)==0) {
+(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
+
+jvmState = 0;
+return 0;
+}
+
+return -1;
+
+}
+*/
+
+EXPORT int __stdcall startJavaVM(char *classpath) {
 
 	//定义一个函数指针，下面用来指向JVM中的JNI_CreateJavaVM函数
 	typedef jint (JNICALL *PFunCreateJavaVM)(JavaVM **, void **, void *);
@@ -55,14 +116,14 @@ EXPORT int __stdcall startJavaVM() {
 	char jre_path[MAXPATHLEN];
 	char tmpbuf[MAXPATHLEN];
 	CreateJavaVM_t funCreateJavaVM;
-	jclass javaClass;
 
 	JavaVMInitArgs vm_args;
 	JavaVMOption options[3];
 
 	options[0].optionString = "-Djava.compiler=NONE";
 	options[1].optionString
-			= "-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\code\\commons-logging-1.0.4.jar";
+		= classpath;
+
 	options[2].optionString = "-verbose:NONE";
 
 	vm_args.version = JNI_VERSION_1_4;
@@ -70,71 +131,49 @@ EXPORT int __stdcall startJavaVM() {
 	vm_args.options = options;
 	vm_args.ignoreUnrecognized = JNI_TRUE;
 
-	GetPublicJREHome(jre_path, bsize);
-	//加载JVM.DLL动态库
 
-	strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
-	strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\server\\jvm.dll");
-	if ((PathFileExists(tmpbuf)) != 1) {
+	if(jvmState==-1) {
+		showMsg("begin start jvm");
+		GetPublicJREHome(jre_path, bsize);
+		//加载JVM.DLL动态库
+
 		strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
-		strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\client\\jvm.dll");
+		strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\server\\jvm.dll");
 		if ((PathFileExists(tmpbuf)) != 1) {
-			fprintf(stderr, "Load jvm.dll faild! Path:%s\n", tmpbuf);
-			return -3;
+			strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
+			strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\client\\jvm.dll");
+			if ((PathFileExists(tmpbuf)) != 1) {
+				showMsg("Load jvm.dll faild! (-3)");
+				return -3;
+			}
 		}
-	}
-	hInstance = LoadLibrary(tmpbuf);
-	if (hInstance == NULL) {
-		fprintf(stderr, "load jvm.dll faild! Path:%s\n", tmpbuf);
-		return -2;
-	}
+		hInstance = LoadLibrary(tmpbuf);
+		if (hInstance == NULL) {
+			showMsg( "load jvm.dll faild! (-2)");
+			return -2;
+		}
 
-	funCreateJavaVM = (CreateJavaVM_t) GetProcAddress(hInstance,
+		funCreateJavaVM = (CreateJavaVM_t) GetProcAddress(hInstance,
 			"JNI_CreateJavaVM");
-	//取得里面的JNI_CreateJavaVM函数指针
+		//取得里面的JNI_CreateJavaVM函数指针
 
-	//调用JNI_CreateJavaVM创建虚拟机
-	res = (*funCreateJavaVM)(&jvm, (void**) &env, &vm_args);
-	if (res < 0) {
-		puts("JVM create failed!\n");
-		return res;
-	}
-	//查找test.Demo类，返回JAVA类的CLASS对象
-	javaClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
-	if (javaClass != NULL) {
-		//根据类的CLASS对象获取该类的实例
-		jmethodID startMethod = NULL;
-		jmethodID mainConstructor = (*env)->GetMethodID(env, javaClass,
-				"<init>", "()V");
-
-		objTradeService = (*env)->NewObject(env, javaClass, mainConstructor);
-
-		startMethod = (*env)->GetMethodID(env, javaClass,
-				"start", "()V");
-		
-		if (startMethod != NULL) {
-			(*env)->CallStaticVoidMethod(env, javaClass, startMethod);
-			showMsg("call start finished!");
+		//调用JNI_CreateJavaVM创建虚拟机
+		res = (*funCreateJavaVM)(&jvm, (void**) &env, &vm_args);
+		if (res < 0) {
+			showMsg("JVM create failed!\n");
+			return res;
 		}
+		jvmState = 0;
 
-		syncDataMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(IDDDD)I");
-		if (syncDataMethod == NULL) {
-			puts("JVM create failed! javaClass not found.\n");
-		}
-
-		tradeMethod = (*env)->GetMethodID(env, javaClass, "doTrade", "(DD)I");
-		if (tradeMethod == NULL) {
-			puts("JVM create failed! javaClass not found.\n");
-		}
-
-	} else {
-		puts("JVM create failed! javaClass not found.\n");
 	}
 
-	jvmState = 0;
-	showMsg("JVM started");
+
+	initJavaService();
+
 	return 0;
 }
+
+
 
 EXPORT void __stdcall cleanupVM(int exitCode) {
 
@@ -143,81 +182,82 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 	JNIEnv * localEnv = env;
 	(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 
-	(*env)->DeleteLocalRef(env, objTradeService);
 	systemClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
 	if (systemClass != NULL) {
-		exitMethod = (*env)->GetStaticMethodID(env, systemClass, "stop", "()V");
+		exitMethod = (*env)->GetMethodID(env, systemClass, "stop", "()V");
 		if (exitMethod != NULL) {
+			(*env)->CallVoidMethod(env, objTradeService, exitMethod);
 
-			(*env)->CallStaticVoidMethod(env, systemClass, exitMethod);
-			showMsg("call exit finished!");
 		}
-
 	}
+
+
+	(*env)->DeleteLocalRef(env, objTradeService);
+	(*jvm)->DetachCurrentThread(jvm);
+
+	showMsg("call exit finished!");
+	/*
 	if ((*env)->ExceptionOccurred(env)) {
-		(*env)->ExceptionDescribe(env);
-		(*env)->ExceptionClear(env);
+	(*env)->ExceptionDescribe(env);
+	(*env)->ExceptionClear(env);
 	}
-
-	(*jvm)->DestroyJavaVM(jvm);
-	jvmState = -1;
-	puts("End call java."); // prints !!!Hello World!!!
+	*/
+	//(*jvm)->DestroyJavaVM(jvm);
+	//jvmState = -1;
+	//puts("End call java."); // prints !!!Hello World!!!
 
 }
 
-EXPORT void __stdcall doTrade(double ask,double bid) {
+EXPORT int __stdcall doTrade(double ask,double bid) {
 	int cmd = 0;
 	JNIEnv * localEnv = env;
 	if (jvmState != 0) {
-		showMsg("JVM is not start!\n");
-		return;
+		return jvmState;
 	}
 
 	if (tradeMethod != NULL) {
-		jstring msg;
-		char* ret;
+
 		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 		//构造参数并调用对象的方法
 		//jstring arg = newJavaString(env, szTest);
 
-		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
-				tradeMethod, ask);
-		ret = (char*) JNI_GetStringChars(localEnv, msg);
-		(*localEnv)->DeleteLocalRef(localEnv, msg);
-		showMsg(ret);
+		cmd = (jint)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
+			tradeMethod, ask,bid);
+		// ret = (char*) JNI_GetStringChars(localEnv, msg);
+		// (*localEnv)->DeleteLocalRef(localEnv, msg);
+		// showMsg(ret);
 		(*jvm)->DetachCurrentThread(jvm);
 
 	} else {
-		showMsg("run Method is null");
+		return -3;
 	}
+	return cmd;
 }
 
-EXPORT void __stdcall doSyncData(int time, double open, double high, double low,
-		double close) {
-	int cmd = 0;
-	JNIEnv * localEnv = env;
-	if (jvmState != 0) {
-		showMsg("JVM is not start!\n");
-		return;
-	}
+EXPORT int __stdcall doSyncData(int time, double open, double high, double low,
+	double close) {
+		int cmd = 0;
+		JNIEnv * localEnv = env;
+		if (jvmState != 0) {
+			// showMsg("JVM is not start!\n");
+			return -2;
+		}
 
-	if (syncDataMethod != NULL) {
-		jstring msg;
-		char* ret;
-		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
-		//构造参数并调用对象的方法
-		//jstring arg = newJavaString(env, szTest);
+		if (syncDataMethod != NULL) {
 
-		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
+			(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+			//构造参数并调用对象的方法
+			//jstring arg = newJavaString(env, szTest);
+
+			cmd = (jint)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
 				syncDataMethod, time,open,high,low,close);
-		ret = (char*) JNI_GetStringChars(localEnv, msg);
-		(*localEnv)->DeleteLocalRef(localEnv, msg);
-		showMsg(ret);
-		(*jvm)->DetachCurrentThread(jvm);
+			(*jvm)->DetachCurrentThread(jvm);
 
-	} else {
-		showMsg("run Method is null");
-	}
+		} else {
+			return -3;
+		}
+
+		return cmd;
 }
 
 static jstring newJavaString(JNIEnv *env, char* str) {
@@ -230,10 +270,10 @@ static jstring newJavaString(JNIEnv *env, char* str) {
 			jclass stringClass = (*env)->FindClass(env, "java/lang/String");
 			if (stringClass != NULL) {
 				jmethodID ctor = (*env)->GetMethodID(env, stringClass,
-						"<init>", "([B)V");
+					"<init>", "([B)V");
 				if (ctor != NULL) {
 					newString
-							= (*env)->NewObject(env, stringClass, ctor, bytes);
+						= (*env)->NewObject(env, stringClass, ctor, bytes);
 				}
 			}
 		}
@@ -256,15 +296,15 @@ static char* JNI_GetStringChars(JNIEnv *env, jstring str) {
 	jclass stringClass = (*env)->FindClass(env, "java/lang/String");
 	if (stringClass != NULL) {
 		jmethodID getBytesMethod = (*env)->GetMethodID(env, stringClass,
-				"getBytes", "()[B");
+			"getBytes", "()[B");
 		if (getBytesMethod != NULL) {
 			jbyteArray bytes = (*env)->CallObjectMethod(env, str,
-					getBytesMethod);
+				getBytesMethod);
 			if (!(*env)->ExceptionOccurred(env)) {
 				jsize length = (*env)->GetArrayLength(env, bytes);
 				buffer = malloc((length + 1) * sizeof(char*));
 				(*env)->GetByteArrayRegion(env, bytes, 0, length,
-						(jbyte*) buffer);
+					(jbyte*) buffer);
 				buffer[length] = 0;
 			}
 			(*env)->DeleteLocalRef(env, bytes);
@@ -279,16 +319,16 @@ static char* JNI_GetStringChars(JNIEnv *env, jstring str) {
 }
 
 static jboolean GetStringFromRegistry(HKEY key, const char *name, char *buf,
-		jint bufsize) {
-	DWORD type, size;
+	jint bufsize) {
+		DWORD type, size;
 
-	if (RegQueryValueEx(key, name, 0, &type, 0, &size) == 0 && type == REG_SZ
+		if (RegQueryValueEx(key, name, 0, &type, 0, &size) == 0 && type == REG_SZ
 			&& (size < (unsigned int) bufsize)) {
-		if (RegQueryValueEx(key, name, 0, 0, buf, &size) == 0) {
-			return JNI_TRUE;
+				if (RegQueryValueEx(key, name, 0, 0, buf, &size) == 0) {
+					return JNI_TRUE;
+				}
 		}
-	}
-	return JNI_FALSE;
+		return JNI_FALSE;
 }
 
 static jboolean GetPublicJREHome(char *buf, jint bufsize) {
@@ -296,11 +336,11 @@ static jboolean GetPublicJREHome(char *buf, jint bufsize) {
 	char version[MAXPATHLEN];
 
 	/*
-	 * Note: There is a very similar implementation of the following
-	 * registry reading code in the Windows java control panel (javacp.cpl).
-	 * If there are bugs here, a similar bug probably exists there.  Hence,
-	 * changes here require inspection there.
-	 */
+	* Note: There is a very similar implementation of the following
+	* registry reading code in the Windows java control panel (javacp.cpl).
+	* If there are bugs here, a similar bug probably exists there.  Hence,
+	* changes here require inspection there.
+	*/
 
 	/* Find the current version of the JRE */
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, JRE_KEY, 0, KEY_READ, &key) != 0) {
@@ -310,7 +350,7 @@ static jboolean GetPublicJREHome(char *buf, jint bufsize) {
 
 	if (!GetStringFromRegistry(key, "CurrentVersion", version, sizeof(version))) {
 		fprintf(stderr, "Failed reading value of registry key:\n\t"
-		JRE_KEY "\\CurrentVersion\n");
+			JRE_KEY "\\CurrentVersion\n");
 		RegCloseKey(key);
 		return JNI_FALSE;
 	}
@@ -325,14 +365,14 @@ static jboolean GetPublicJREHome(char *buf, jint bufsize) {
 	/* Find directory where the current version is installed. */
 	if (RegOpenKeyEx(key, version, 0, KEY_READ, &subkey) != 0) {
 		fprintf(stderr, "Error opening registry key '"
-		JRE_KEY "\\%s'\n", version);
+			JRE_KEY "\\%s'\n", version);
 		RegCloseKey(key);
 		return JNI_FALSE;
 	}
 
 	if (!GetStringFromRegistry(subkey, "JavaHome", buf, bufsize)) {
 		fprintf(stderr, "Failed reading value of registry key:\n\t"
-		JRE_KEY "\\%s\\JavaHome\n", version);
+			JRE_KEY "\\%s\\JavaHome\n", version);
 		RegCloseKey(key);
 		RegCloseKey(subkey);
 		return JNI_FALSE;
