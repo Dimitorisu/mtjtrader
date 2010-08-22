@@ -23,7 +23,7 @@
 
 
 	<!-- 初始化的具体的目录信息 -->
-	<target name="init" description="初始化代码">
+	<target name="init">
 		<mkdir dir="${classes.home}" />
 		<mkdir dir="${dist.home}" />
 	</target>
@@ -43,8 +43,7 @@
 		</java>
 	</target>
 
-	<target name="all" description="整体的操作" depends="clean,init,javac,jar">
-	</target>
+
 
 
 	<target name="javac" description="javac 编译java程序">
@@ -68,7 +67,7 @@
 -->
 	</target>
 
-	<target name="jar" description="创建jar的文件" depends="clean,init,javac">
+	<target name="jar" depends="clean,init,javac">
 		<delete file="${dist.home}/${ant.project.name}.jar" failonerror="false" />
 		<jar basedir="${classes.home}" jarfile="${dist.home}/${ant.project.name}.jar">
 			<manifest>
@@ -79,6 +78,7 @@
 		</jar>
 	</target>
 
+	<target name="all"  depends="clean,init,javac,jar" />
 
 </project>
 
