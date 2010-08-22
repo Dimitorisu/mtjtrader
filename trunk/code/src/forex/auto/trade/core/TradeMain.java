@@ -9,21 +9,35 @@ import forex.auto.trade.lib.Candle;
 public class TradeMain {
 
 	private static Log log = LogFactory.getLog(TradeMain.class);
-	private static TradeService ts = null;
+	private TradeService ts = null;
 
-	public static void start() {
-		ts = TradeService.getInstance();
-		ts.addEa(new MyEA());
-		ts.start();
-	}
-	
-	public static void stop() {
-		
+	public TradeMain() {
+		// TODO Auto-generated constructor stub
 	}
 
-	public static int syncData(int time, double open, double low, double high,
+	public void start() {
+		try {
+			ts = TradeService.getInstance();
+			ts.addEa(new MyEA());
+			ts.start();
+			if (log.isInfoEnabled()) {
+				log.info("JTrade is started!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void stop() {
+
+	}
+
+	public int syncData(int time, double open, double low, double high,
 			double close) {
 		if (ts != null) {
+			
 			Candle c = new Candle();
 			c.setTime(time * 1000); // change from second to ms.
 			c.setOpen(open);
@@ -31,12 +45,13 @@ public class TradeMain {
 			c.setHigh(high);
 			c.setClose(close);
 			ts.addData(c);
+			
+			ts.run();
 		}
 		return 0;
 	}
 
-	public static int doTrade(double ask, double bid) {
-
+	public int doTrade(double ask, double bid) {
 
 		return 0;
 	}
@@ -50,8 +65,6 @@ public class TradeMain {
 		FilePriceProvider dp = new FilePriceProvider();
 		dp.init();
 		// ts.addDataProvider(dp);
-	
-		
 
 		ts.start();
 		// 
