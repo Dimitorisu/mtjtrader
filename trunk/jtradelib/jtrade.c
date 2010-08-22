@@ -68,7 +68,7 @@ void initJavaService() {
 
 			(*env)->CallVoidMethod(env, objTradeService,startMethod);
 
-			showMsg("call start finished!");
+			//showMsg("call start finished!");
 		}
 
 		syncDataMethod = (*env)->GetMethodID(env, javaClass, "syncData", "(IDDDD)I");
@@ -91,20 +91,51 @@ void initJavaService() {
 
 }
 
-/*
-int getJVM() {
 
-if(JNI_GetCreatedJavaVMs(&jvm, 1, NULL)==0) {
-(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
 
-jvmState = 0;
-return 0;
+static int FindCreatedJavaVM()
+{
+	//JavaVM *jvm = NULL;
+	jsize jvm_count = 0;
+	jint res=0;
+	jint bsize = MAXPATHLEN;
+	char jre_path[MAXPATHLEN];
+	char tmpbuf[MAXPATHLEN];
+
+	typedef jint(JNICALL *CreateJavaVM_t)
+		(JavaVM **pvm, void **env, void *args);
+
+	typedef jint (JNICALL *GetCreatedJavaVMs_t)( JavaVM **vmBuf, jsize bufLen, jsize *nVMs);
+	GetCreatedJavaVMs_t MyGetCreatedJavaVMs;
+
+	GetPublicJREHome(jre_path, bsize);
+	//加载JVM.DLL动态库
+
+	strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
+	strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\server\\jvm.dll");
+	if ((PathFileExists(tmpbuf)) != 1) {
+		strcpy_s(tmpbuf, MAXPATHLEN, jre_path);
+		strcat_s(tmpbuf, MAXPATHLEN, "\\bin\\client\\jvm.dll");
+		if ((PathFileExists(tmpbuf)) != 1) {
+			showMsg("Load jvm.dll faild! (-3)");
+			return -3;
+		}
+	}
+	hInstance = GetModuleHandle(tmpbuf);
+	if(hInstance == NULL) {
+		return -1;
+	}
+
+	MyGetCreatedJavaVMs = (GetCreatedJavaVMs_t)GetProcAddress( hInstance, "JNI_GetCreatedJavaVMs" );
+
+	res = MyGetCreatedJavaVMs(&jvm, 1, &jvm_count);
+
+	(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
+	//showMsg("find exist jvm!");
+	jvmState = 0;
+
+	return res;
 }
-
-return -1;
-
-}
-*/
 
 EXPORT int __stdcall startJavaVM(char *classpath) {
 
@@ -132,8 +163,9 @@ EXPORT int __stdcall startJavaVM(char *classpath) {
 	vm_args.ignoreUnrecognized = JNI_TRUE;
 
 
-	if(jvmState==-1) {
-		showMsg("begin start jvm");
+	if(FindCreatedJavaVM()<0) {
+		//showMsg("begin start jvm");
+
 		GetPublicJREHome(jre_path, bsize);
 		//加载JVM.DLL动态库
 
@@ -195,7 +227,10 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 	(*env)->DeleteLocalRef(env, objTradeService);
 	(*jvm)->DetachCurrentThread(jvm);
 
-	showMsg("call exit finished!");
+
+
+	//showMsg("call exit finished!");
+
 	/*
 	if ((*env)->ExceptionOccurred(env)) {
 	(*env)->ExceptionDescribe(env);
@@ -203,9 +238,11 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 	}
 	*/
 	//(*jvm)->DestroyJavaVM(jvm);
-	//jvmState = -1;
+	jvmState = -1;
 	//puts("End call java."); // prints !!!Hello World!!!
+	//FreeLibrary(hInstance);
 
+	//showMsg("call exit finished!");
 }
 
 EXPORT int __stdcall doTrade(double ask,double bid) {
