@@ -15,8 +15,8 @@
 //+------------------------------------------------------------------+
 //| DLL imports                                                      |
 //+------------------------------------------------------------------+
- #import "ExpertSample.dll"
-   int startJavaVM();
+ #import "jtrade.dll"
+   int startJavaVM(string classpath);
    void cleanupVM(int exitCode);
    int doTrade(double ask,double bid);
    int doSyncData(int time, double open, double high, double low, double close);

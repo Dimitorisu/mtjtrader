@@ -16,31 +16,41 @@ datetime lastSyncTime=0;
 int init()
   {
 //----
-   int retcode = startJavaVM();
+string classpath ="-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\code\\commons-logging-1.0.4.jar;E:\\jtradesvn\\code\\log4j-1.2.15.jar";
+   int retcode = startJavaVM(classpath);
    if(retcode !=0) {
       Print("Start JVM failed! Returned value is ",retcode);
    }
    
    int bars = iBars( NULL, PERIOD_D1);
    syncData(PERIOD_D1,bars);
+   Print("sync data PERIOD_D1,bars:",bars);
    
    bars = iBars( NULL, PERIOD_H4);
    syncData(PERIOD_H4,bars);
+   Print("sync data PERIOD_H4,bars:",bars);
+   
    
    bars = iBars( NULL, PERIOD_H1);
    syncData(PERIOD_H1,bars);
+   Print("sync data PERIOD_H1,bars:",bars);
+   
    
    bars = iBars( NULL, PERIOD_M30);
    syncData(PERIOD_M30,bars);
+   Print("sync data PERIOD_M30,bars:",bars);
    
    bars = iBars( NULL, PERIOD_M15);
    syncData(PERIOD_M15,bars);
+   Print("sync data PERIOD_M15,bars:",bars);
    
    bars = iBars( NULL, PERIOD_M5);
    syncData(PERIOD_M5,bars);
+   Print("sync data PERIOD_M5,bars:",bars);
    
    bars = iBars( NULL, PERIOD_M1);
    syncData(PERIOD_M1,bars);
+   Print("sync data PERIOD_M1,bars:",bars);
    
 //----
    return(0);
@@ -55,6 +65,7 @@ int deinit()
 //----
    return(0);
   }
+  
 //+------------------------------------------------------------------+
 //| expert start function                                            |
 //+------------------------------------------------------------------+
@@ -67,15 +78,18 @@ int start()
    
 //----
    int cmd = doTrade(Ask,Bid);
-
+ Print("do trade,cmd:" + cmd);
 //----
    return(0);
   }
 //+------------------------------------------------------------------+
 
 int syncData(int timeframe,int lastBar) {
+   int syncCount =0;
+   
 
    if(lastBar != -1) {
+   
    
       for(int i=lastBar;i<=0;i++) {
             datetime time = iTime(NULL,timeframe,i);
@@ -83,15 +97,19 @@ int syncData(int timeframe,int lastBar) {
             double highPrice = iHigh(NULL,timeframe,i);
             double lowPrice = iLow(NULL,timeframe,i);
             double openPrice = iOpen(NULL,timeframe,i);
-         doSyncData(TimeSeconds(time),openPrice,lowPrice,highPrice,closePrice);
+            if(doSyncData(TimeSeconds(time),openPrice,lowPrice,highPrice,closePrice) != -3) {
+                syncCount++;
+            } else {
+                return (-3);
+            }
       }
    } else {
-      return -1;
+      return (-1);
    }
    
    
    int now = iTime(NULL, timeframe, 0);
    lastSyncTime= now;
    
-   return 0;
+   return (syncCount);
 }
