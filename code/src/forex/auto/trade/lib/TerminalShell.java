@@ -1,14 +1,11 @@
 package forex.auto.trade.lib;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
 
 import net.wimpi.telnetd.TelnetD;
 import net.wimpi.telnetd.io.BasicTerminalIO;
 import net.wimpi.telnetd.net.Connection;
-import net.wimpi.telnetd.net.ConnectionData;
 import net.wimpi.telnetd.net.ConnectionEvent;
 import net.wimpi.telnetd.shell.Shell;
 
@@ -24,15 +21,22 @@ public class TerminalShell implements Shell {
 		m_Connection.addConnectionListener(this);
 
 		try {
-			m_IO.write("Simple2Shell" + BasicTerminalIO.CRLF);
+			m_IO.write("JTrader 1.0" + BasicTerminalIO.CRLF);
+			m_IO.write(BasicTerminalIO.CRLF);
+			m_IO.write(BasicTerminalIO.CRLF);
 			// output stored environment variables
-			ConnectionData cd = m_Connection.getConnectionData();
-			HashMap env = cd.getEnvironment();
-			Iterator it = env.keySet().iterator();
-			while (it.hasNext()) {
-				String key = (String) it.next();
-				m_IO.write(key + "=" + env.get(key) + BasicTerminalIO.CRLF);
+			//ConnectionData cd = m_Connection.getConnectionData();
+			String input = readInput(m_IO);;
+		CommadProcessor cp = CommadProcessor.getInstance();
+			while (!"exit".equalsIgnoreCase(input)){
+
+				String output = cp.executeCommand(input);
+				m_IO.write(output + BasicTerminalIO.CRLF);
+				
+				input = readInput(m_IO);
+				
 			}
+
 			m_IO.write("Goodbye!" + BasicTerminalIO.CRLF);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -40,6 +44,22 @@ public class TerminalShell implements Shell {
 		}
 
 	}// run
+
+	private String readInput(BasicTerminalIO mIO) throws IOException {
+		StringBuffer input = new StringBuffer();
+		
+		mIO.write("$");
+		int i =0;
+		
+		while ((i= mIO.read()) != 10) {
+			char c = (char) i;
+			input.append(c);
+			mIO.write(c);
+		}
+		
+		mIO.write(BasicTerminalIO.CRLF);
+		return input.toString();
+	}
 
 	public void connectionTimedOut(ConnectionEvent ce) {
 		try {
@@ -98,12 +118,11 @@ public class TerminalShell implements Shell {
 			TelnetD daemon = TelnetD.createTelnetD(props);
 			// 2.start serving
 			daemon.start();
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		
 	}
 }
