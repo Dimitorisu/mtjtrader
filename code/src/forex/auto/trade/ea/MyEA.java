@@ -7,15 +7,16 @@ import forex.auto.trade.TradeHelper;
 import forex.auto.trade.core.Stochastic;
 import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TradeService;
+import forex.auto.trade.lib.Candle;
 
 public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
-	private TimeSerise times;
 	private Stochastic ema;
 	long lasttime = 0;
+	private TreadSelect tread;
+
 	@Override
 	public void destroy() {
-		
 
 	}
 
@@ -23,26 +24,25 @@ public class MyEA extends TradeHelper {
 	public void init() {
 
 		TradeService ts = TradeService.getInstance();
-		times = ts.getTimeSerise(TimeSerise.ONE_HOUR);
-		ema = new Stochastic();
-		times.registerIndicator(ema);
+		TimeSerise times = ts.getTimeSerise(TimeSerise.FOUR_HOUR);
+		this.tread = new TreadSelect(times);
+
 	}
 
 	@Override
 	public void start() {
 
-		
-
-		if (times.getCandle(0).getTime() != lasttime) {
-			if (log.isDebugEnabled()) {
-				System.out.println("canle:" + times.getCandle(1) + ",ema:"
-						+ ema.value(MODE_SIGNAL,1));
+		tread.watch();
+		String state = tread.report();
+		if (state != null) {
+			if (log.isInfoEnabled()) {
+				TradeService ts = TradeService.getInstance();
+				TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_MIN);
+				Candle c = times.getCandle(0);
+				log.info("Trend:" + state + ",candle:" + c);
 			}
-			lasttime = times.getCandle(0).getTime();
 		}
-		// if (log.isInfoEnabled()) {
-		// log.info("macd:" + macd);
-		// }
+
 	}
 
 }
