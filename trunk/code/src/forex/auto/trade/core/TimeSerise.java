@@ -24,6 +24,10 @@ public class TimeSerise {
 		cfg = new TimeSeriseContext(candles);
 
 	}
+	
+	public TimeSeriseContext getContext() {
+		return cfg;
+	}
 
 	public static TimeSerise createTimeSerise(int _timeFrame, int _size) {
 		return new TimeSerise(_timeFrame, _size);

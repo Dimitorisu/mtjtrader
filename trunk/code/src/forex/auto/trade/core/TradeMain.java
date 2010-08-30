@@ -60,24 +60,31 @@ public class TradeMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
-		TradeService ts = TradeService.getInstance();
+		TradeMain tm = new TradeMain();
+		tm.start();
+		
+		
 		FilePriceProvider dp = new FilePriceProvider();
 		dp.init();
 		// ts.addDataProvider(dp);
 
-		ts.start();
 		// 
 		while (true) {
 			Candle candle = dp.read();
 			if (candle == null) {
 				break;
 			}
-			ts.addData(candle);
-			ts.run();
+			int time = (int)candle.getTime()/1000;
+			double open = candle.getOpen();
+			double low = candle.getLow();
+			double high = candle.getHigh();
+			double close = candle.getClose();
+			
+			tm.syncData(time, open, low, high, close);
+			tm.doTrade(0, 0);
 		}
 
-		ts.stop();
+		tm.stop();
 
 	}
 
