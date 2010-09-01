@@ -92,12 +92,12 @@ int syncData(int timeframe,int lastBar) {
    
    
       for(int i=lastBar;i<=0;i++) {
-            datetime time = iTime(NULL,timeframe,i);
+            int time = iTime(NULL,timeframe,i);
             double closePrice = iClose(NULL,timeframe,i);
             double highPrice = iHigh(NULL,timeframe,i);
             double lowPrice = iLow(NULL,timeframe,i);
             double openPrice = iOpen(NULL,timeframe,i);
-            if(doSyncData(TimeSeconds(time),openPrice,lowPrice,highPrice,closePrice) != -3) {
+            if(doSyncData(time,openPrice,lowPrice,highPrice,closePrice) != -3) {
                 syncCount++;
             } else {
                 return (-3);
@@ -108,8 +108,8 @@ int syncData(int timeframe,int lastBar) {
    }
    
    
-   int now = iTime(NULL, timeframe, 0);
-   lastSyncTime= now;
+
+   lastSyncTime= iTime(NULL, timeframe, 0);
    
    return (syncCount);
 }
