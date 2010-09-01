@@ -13,7 +13,7 @@ public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
 	private Stochastic ema;
 	long lasttime = 0;
-	private TreadSelect tread;
+	private TrendSelect tread;
 
 	@Override
 	public void destroy() {
@@ -25,7 +25,7 @@ public class MyEA extends TradeHelper {
 
 		TradeService ts = TradeService.getInstance();
 		TimeSerise times = ts.getTimeSerise(TimeSerise.FOUR_HOUR);
-		this.tread = new TreadSelect(times);
+		this.tread = new TrendSelect(times);
 
 	}
 

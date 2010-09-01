@@ -5,14 +5,14 @@ import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TimeSeriseContext;
 import forex.auto.trade.lib.Candle;
 
-public class TreadSelect {
+public class TrendSelect {
 
 	private TimeSerise ts;
 	private long lastTime = -1;
 	private MACD macd;
 	String state = null;
 
-	public TreadSelect(TimeSerise times) {
+	public TrendSelect(TimeSerise times) {
 
 		this.macd = new MACD();
 		times.registerIndicator(macd);
@@ -24,7 +24,7 @@ public class TreadSelect {
 		state = null;
 
 		TimeSeriseContext ctx = ts.getContext();
-		System.out.println("ctx:" + ctx.bars());
+
 		if (ctx.bars() < 100) {
 			return;
 		}
