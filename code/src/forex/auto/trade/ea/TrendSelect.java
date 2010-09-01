@@ -38,9 +38,10 @@ public class TrendSelect {
 				if (vLastLast > vLast && vLast < vNow) { // change point. V
 					// sharp.
 
-					if (state == 1)
+					if (state >= 1)
 						state = 2;
 					else {
+						
 						state = 1;
 						//System.out.println("now:" + now);
 					}
@@ -51,9 +52,10 @@ public class TrendSelect {
 				double vLastLast = macd.value(MACD.MODE_MAIN, 2);
 				if (vLastLast < vLast && vLast > vNow) { // change point. A
 					// sharp.
-					if (state == -1)
+					if (state <= -1)
 						state = -2;
 					else {
+						
 						state = -1;
 						//System.out.println("now:" + now);
 					}
