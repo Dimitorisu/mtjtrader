@@ -1,5 +1,6 @@
 package forex.auto.trade.lib;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class CommadProcessor {
@@ -19,13 +20,12 @@ public class CommadProcessor {
 	public String executeCommand(String input) {
 		String[] inputString = input.split(" ");
 		String cmdString = inputString[0];
+		String[] param = Arrays.copyOfRange(inputString, 1, inputString.length);
 		Command cmd = cmds.get(cmdString);
 		if (cmd != null) {
-			String param = input.substring(input.indexOf(cmdString) + 1);
-
 			return cmd.run(param);
 		} else {
-			return "Unknown command:" + cmdString + "!";
+			return "Unknown command: " + cmdString + "!";
 		}
 
 	}

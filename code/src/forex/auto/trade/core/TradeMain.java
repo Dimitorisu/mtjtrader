@@ -34,12 +34,12 @@ public class TradeMain {
 
 	}
 
-	public int syncData(int time, double open, double low, double high,
+	public int syncData(long time, double open, double low, double high,
 			double close) {
 		if (ts != null) {
 			
 			Candle c = new Candle();
-			c.setTime(time * 1000); // change from second to ms.
+			c.setTime(time); // change from second to ms.
 			c.setOpen(open);
 			c.setLow(low);
 			c.setHigh(high);
@@ -74,7 +74,8 @@ public class TradeMain {
 			if (candle == null) {
 				break;
 			}
-			int time = (int)candle.getTime()/1000;
+			
+			long time = candle.getTime();
 			double open = candle.getOpen();
 			double low = candle.getLow();
 			double high = candle.getHigh();

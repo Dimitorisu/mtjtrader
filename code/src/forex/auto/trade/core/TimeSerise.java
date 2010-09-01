@@ -36,6 +36,7 @@ public class TimeSerise {
 	public static TimeSerise createTimeSerise(int _timeFrame) {
 		return new TimeSerise(_timeFrame, 2000);
 	}
+	
 
 	public Candle getCandle(int index) {
 		return cfg.getCandle(index);
