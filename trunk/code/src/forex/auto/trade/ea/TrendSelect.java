@@ -10,7 +10,7 @@ public class TrendSelect {
 	private TimeSerise ts;
 	private long lastTime = -1;
 	private MACD macd;
-	String state = null;
+	int state = 0;
 
 	public TrendSelect(TimeSerise times) {
 
@@ -21,15 +21,11 @@ public class TrendSelect {
 
 	void watch() {
 
-		state = null;
-
 		TimeSeriseContext ctx = ts.getContext();
 
 		if (ctx.bars() < 100) {
 			return;
 		}
-		
-		
 
 		Candle now = ctx.getCandle(0);
 		if (lastTime != now.getTime()) { // first new bar. then check the trend.
@@ -40,19 +36,32 @@ public class TrendSelect {
 				double vLast = macd.value(MACD.MODE_MAIN, 1);
 				double vLastLast = macd.value(MACD.MODE_MAIN, 2);
 				if (vLastLast > vLast && vLast < vNow) { // change point. V
-															// sharp.
-					state = "up";
+					// sharp.
+
+					if (state == 1)
+						state = 2;
+					else {
+						state = 1;
+						//System.out.println("now:" + now);
+					}
 				}
 
 			} else if (vNow < 0) {// go down
 				double vLast = macd.value(MACD.MODE_MAIN, 1);
 				double vLastLast = macd.value(MACD.MODE_MAIN, 2);
 				if (vLastLast < vLast && vLast > vNow) { // change point. A
-															// sharp.
-					state = "down";
+					// sharp.
+					if (state == -1)
+						state = -2;
+					else {
+						state = -1;
+						//System.out.println("now:" + now);
+					}
 				}
 
-			}
+			} else
+
+				state = 0;
 
 		} else {
 			lastTime = now.getTime();
@@ -60,7 +69,7 @@ public class TrendSelect {
 
 	}
 
-	String report() {
+	int report() {
 		return state;
 	}
 
