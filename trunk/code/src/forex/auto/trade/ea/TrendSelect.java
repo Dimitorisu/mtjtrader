@@ -41,33 +41,33 @@ public class TrendSelect {
 		if (vLast > vNow) { // change point. A
 			double vLastLast = macd.value(MACD.MODE_MAIN, 2);
 			if (vLastLast < vLast) {
-				// sharp.
-				if (state >= 1)
-					state = 2;
+				
+				if (state <= -1)
+					state = -2;
 				else {
-					state = 1;
+
+					state = -1;
 					// System.out.println("now:" + now);
 				}
+				// sharp.
+				
 			}
 		} else if (vLast < vNow) { // change point. V
 
 			double vLastLast = macd.value(MACD.MODE_MAIN, 2);
 			// sharp.
 			if (vLastLast > vLast) {
+				
 				if (state >= 1)
 					state = 2;
 				else {
-
 					state = 1;
 					// System.out.println("now:" + now);
 				}
 			}
 		}
 
-		if (state == -1) {
-			state = -2;
-		}
-
+	
 	}
 
 	int report() {
