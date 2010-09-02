@@ -4,14 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import forex.auto.trade.TradeHelper;
-import forex.auto.trade.core.Stochastic;
 import forex.auto.trade.core.TimeSerise;
 import forex.auto.trade.core.TradeService;
 import forex.auto.trade.lib.Candle;
 
 public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
-	private Stochastic ema;
 	long lasttime = 0;
 	private TrendSelect tread;
 
@@ -34,7 +32,7 @@ public class MyEA extends TradeHelper {
 
 		tread.watch();
 		int state = tread.report();
-		if ( state == -1) {
+		if ( state == 1) {
 			if (log.isInfoEnabled()) {
 				TradeService ts = TradeService.getInstance();
 				TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_MIN);
