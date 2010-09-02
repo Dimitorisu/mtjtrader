@@ -34,7 +34,7 @@ public class MyEA extends TradeHelper {
 
 		tread.watch();
 		int state = tread.report();
-		if (state == 1 || state == -1) {
+		if ( state == -1) {
 			if (log.isInfoEnabled()) {
 				TradeService ts = TradeService.getInstance();
 				TimeSerise times = ts.getTimeSerise(TimeSerise.ONE_MIN);
