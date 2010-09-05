@@ -11,7 +11,8 @@
 //+------------------------------------------------------------------+
 
 datetime lastSyncTime=0;
-
+int MagicNumber =87109493;
+double lotMM = 0.1;
 
 int init()
   {
@@ -72,12 +73,37 @@ int deinit()
 int start()
   {
   
+
+  
    int lastBar = iBarShift(NULL,PERIOD_M1,lastSyncTime,true);
    syncData(PERIOD_M1,lastBar);
    
    
+   // Check if any open positions
+   HandleOpenPositions();  
+   
 //----
-   int cmd = doTrade(Ask,Bid);
+   string ret = doTrade(Ask,Bid);
+   
+   string cmd = StringSubstr(ret,0,1);
+      if ( cmd =="B" )
+   {
+        OpenBuyOrder(cmd);      
+   } else if ( cmd =="S")
+   {
+       OpenSellOrder(cmd);
+      
+   } else if(cmd=="C") 
+   {
+		   CloseOrder(cmd);
+		   
+	}else if(cmd=="T") 
+	{	   
+		  	ModifyOrder(cmd);
+		
+	}   
+
+   
  Print("do trade,cmd:" + cmd);
 //----
    return(0);
@@ -120,3 +146,172 @@ int syncData(int timeframe,int lastBar) {
    
    return (syncCount);
 }
+
+
+
+
+//+------------------------------------------------------------------+
+//| OpenBuyOrder                                                     |
+//| If Stop Loss or TakeProfit are used the values are calculated    |
+//| for each trade
+//| cmd=B1.31112|1.31111|1.32111|2342341                                                   |
+//+------------------------------------------------------------------+
+void OpenBuyOrder(string cmd)
+{
+   int err,ticket;
+      
+  int p1 = StringFind(cmd,"|",2);
+  int p2 = StringFind(cmd,"|",p1+1);
+  int p3 = StringFind(cmd,"|",p2+1);
+  string pString1 = StringSubstr(cmd,1,p1-1);
+  string pString2 = StringSubstr(cmd,p1+1,p2-p1-1);
+  string pString3 = StringSubstr(cmd,p2+1,p3-p2-1);
+  string pString4 = StringSubstr(cmd,p3+1);
+  double myPrice= StrToDouble(pString1);
+  double myStopLoss= StrToDouble(pString2);
+  double myTakeProfit= StrToDouble(pString3);
+  int myMagicNumber = StrToInteger(pString4);
+  
+   ticket=OrderSend(Symbol(),OP_BUY,lotMM,myPrice,0,myStopLoss,myTakeProfit,NULL,myMagicNumber,0,NULL); 
+
+   if(ticket<=0)
+   {
+      err = GetLastError();
+      Print("Error opening BUY order: (" + err + ") " ); 
+   }
+}
+
+
+
+//+------------------------------------------------------------------+
+//| OpenSellOrder                                                    |
+//| If Stop Loss or TakeProfit are used the values are calculated    |
+//| for each trade
+//| cmd=S1.31112|1.31111|1.32111|2342341                                                      |
+//+------------------------------------------------------------------+
+void OpenSellOrder(string cmd)
+{
+   int err, ticket;
+   
+   int p1 = StringFind(cmd,"|",2);
+  int p2 = StringFind(cmd,"|",p1+1);
+  int p3 = StringFind(cmd,"|",p2+1);
+  string pString1 = StringSubstr(cmd,1,p1-1);
+  string pString2 = StringSubstr(cmd,p1+1,p2-p1-1);
+  string pString3 = StringSubstr(cmd,p2+1,p3-p2-1);
+  string pString4 = StringSubstr(cmd,p3+1);
+  double myPrice= StrToDouble(pString1);
+  double myStopLoss= StrToDouble(pString2);
+  double myTakeProfit= StrToDouble(pString3);
+  int myMagicNumber = StrToInteger(pString4);
+  
+  
+  
+   ticket=OrderSend(Symbol(),OP_SELL,lotMM,myPrice,0,myStopLoss,myTakeProfit,NULL,myMagicNumber,0,NULL); 
+
+   if(ticket<=0)
+   {
+      err = GetLastError();
+      Print("Error opening Sell order : (" + err + ") " ); 
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Handle Open Positions                                            |
+//| Check if any open positions need to be closed or modified        |
+//+------------------------------------------------------------------+
+int HandleOpenPositions() {
+	int cnt;
+	bool YesClose;
+	double pt;
+
+	for (cnt = OrdersTotal() - 1; cnt >= 0; cnt--) {
+		OrderSelect(cnt, SELECT_BY_POS, MODE_TRADES);
+		if (OrderSymbol() != Symbol())
+			continue;
+		if (OrderMagicNumber() != MagicNumber)
+			continue;
+
+      string feedback = doSyncOrder(OrderTicket(),OrderType(), OrderLots(), OrderOpenPrice(),
+				OrderStopLoss(), OrderTakeProfit());
+					
+	}
+}
+
+//+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+//| Close Open Position Controls                                     |
+//|  Try to close position 3 times                                   |
+//+------------------------------------------------------------------+
+void CloseOrder(string feedback)
+{
+   int CloseCnt, err;
+   //feedback="C2345678|0.1|1.3533";
+   int p1 = StringFind(feedback,"|",1);
+   int p2 = StringFind(feedback,"|",p1+1);
+
+   string pString1 = StringSubstr(feedback,1,p1-1);
+   string pString2 = StringSubstr(feedback,p1+1,p2-p1-1);
+   string pString3 = StringSubstr(feedback,p2+1);
+   int ticket = StrToInteger(pString1);
+   double numLots = StrToDouble(pString2);
+   double close_price = StrToDouble(pString3);
+
+   // try to close 3 Times
+      
+    CloseCnt = 0;
+    while (CloseCnt < 3)
+    {
+       if (OrderClose(ticket,numLots,close_price,0,Violet))
+       {
+         CloseCnt = 3;
+       }
+       else
+       {
+         err=GetLastError();
+         Print(CloseCnt," Error closing order : (", err , ") " );
+         if (err > 0) CloseCnt++;
+       }
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Modify Open Position Controls                                    |
+//|  Try to modify position 3 times                                  |
+//+------------------------------------------------------------------+
+void ModifyOrder(string feedback)
+{
+    int CloseCnt, err;
+    //feedback="T2345678|1.3455|1.3533|1.3211";
+		   int p1 = StringFind(feedback,"|",1);
+         int p2 = StringFind(feedback,"|",p1+1);
+         int p3 = StringFind(feedback,"|",p2+1);
+         
+         string pString1 = StringSubstr(feedback,1,p1-1);
+         string pString2 = StringSubstr(feedback,p1+1,p2-p1-1);
+         string pString3 = StringSubstr(feedback,p2+1,p3-p2-1);
+         string pString4 = StringSubstr(feedback,p3+1);
+         int ord_ticket = StrToInteger(pString1);
+         double op = StrToDouble(pString2);
+         double sl = StrToDouble(pString3);
+		   double tp = StrToDouble(pString4);
+		   
+    
+    CloseCnt=0;
+    while (CloseCnt < 3)
+    {
+       if (OrderModify(ord_ticket,op,sl,tp,0,Aqua))
+       {
+         CloseCnt = 3;
+       }
+       else
+       {
+          err=GetLastError();
+          Print(CloseCnt," Error modifying order : (", err , ") " );
+         if (err>0) CloseCnt++;
+       }
+    }
+}
+
+
