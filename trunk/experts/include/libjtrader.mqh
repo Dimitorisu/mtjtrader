@@ -18,8 +18,9 @@
  #import "jtrade.dll"
    int startJavaVM(string classpath);
    void cleanupVM(int exitCode);
-   int doTrade(double ask,double bid);
+   string doTrade(double ask,double bid);
    int doSyncData(int time, double open, double high, double low, double close);
+   string doSyncOrder(int ticket,int type, double volume, double price, double stoploss, double profit);
 // #import "my_expert.dll"
 //   int      ExpertRecalculate(int wParam,int lParam);
 // #import
