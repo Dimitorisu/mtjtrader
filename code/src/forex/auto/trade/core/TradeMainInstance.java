@@ -66,33 +66,33 @@ public class TradeMainInstance {
 
 	public int syncData(int time, double open, double low, double high,
 			double close) {
-		
-		Candle c = new Candle();
-		c.setTime(((long) time )* 1000); // change from second to ms.
-		c.setOpen(open);
-		c.setLow(low);
-		c.setHigh(high);
-		c.setClose(close);
-		if (log.isDebugEnabled()) {
-			log.debug("sync:" + c);
-		}
-		
+
 		if (ts != null) {
+
+			Candle c = new Candle();
+			c.setTime(((long) time) * 1000); // change from second to ms.
+			c.setOpen(open);
+			c.setLow(low);
+			c.setHigh(high);
+			c.setClose(close);
+
 			ts.addData(c);
 			ts.run();
 		}
 		return 0;
 	}
 
-	public int doTrade(double ask, double bid) {
+	public String doSyncOrder(int orderTicket, int type, double volume,
+			double price, double stoploss, double profit) {
+		
+		
+		return null;
 
-		if (daemon == null) {
-			// this.start();
-			return (int) ask * 1000;
-		}
+	}
 
-		else
-			return 1;
+	public String doTrade(double ask, double bid) {
+
+		return "aa";
 	}
 
 	/**
