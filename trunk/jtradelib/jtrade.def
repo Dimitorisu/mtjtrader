@@ -4,3 +4,4 @@ EXPORTS startJavaVM
         cleanupVM
         doTrade
         doSyncData
+		doSyncOrder
