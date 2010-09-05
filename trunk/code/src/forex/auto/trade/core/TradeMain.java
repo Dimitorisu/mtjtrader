@@ -1,6 +1,5 @@
 package forex.auto.trade.core;
 
-
 public class TradeMain {
 
 	public TradeMain() {
@@ -23,9 +22,15 @@ public class TradeMain {
 		return inst.syncData(time, open, low, high, close);
 	}
 
-	public int doTrade(double ask, double bid) {
+	public String doTrade(double ask, double bid) {
 		TradeMainInstance inst = TradeMainInstance.getInstance();
 		return inst.doTrade(ask, bid);
+	}
+
+	public String doSyncOrder(int orderTicket, int type, double volume,
+			double price, double stoploss, double profit) {
+		TradeMainInstance inst = TradeMainInstance.getInstance();
+		return inst.doSyncOrder(orderTicket,type,volume,price,stoploss,profit);
 	}
 
 }
