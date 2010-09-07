@@ -28,6 +28,8 @@ public class TradeService {
 			candleCount);
 
 	private MyEA ea;
+	private double ask;
+	private double bid;
 
 	public static TradeService instance = new TradeService();
 
@@ -114,6 +116,21 @@ public class TradeService {
 		FOUR_HOUR.start();
 		ONE_DAY.start();
 
+		
+	}
+	
+	public double getAsk() {
+		return ask;
+	}
+	
+	public double getBid() {
+		return bid;
+	}
+	
+	public void trade(double _ask,double _bid) {
+		this.ask = _ask;
+		this.bid = _bid;
+		
 		if (ea != null) {
 			ea.start();
 		}
