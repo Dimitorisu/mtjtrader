@@ -7,6 +7,8 @@ import net.wimpi.telnetd.TelnetD;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import forex.auto.trade.Order;
+import forex.auto.trade.OrderManager;
 import forex.auto.trade.ea.MyEA;
 import forex.auto.trade.lib.Candle;
 import forex.auto.trade.lib.TerminalShell;
@@ -66,33 +68,69 @@ public class TradeMainInstance {
 
 	public int syncData(int time, double open, double low, double high,
 			double close) {
+		try {
+			if (ts != null) {
 
-		if (ts != null) {
+				Candle c = new Candle();
+				c.setTime(((long) time) * 1000); // change from second to ms.
+				c.setOpen(open);
+				c.setLow(low);
+				c.setHigh(high);
+				c.setClose(close);
 
-			Candle c = new Candle();
-			c.setTime(((long) time) * 1000); // change from second to ms.
-			c.setOpen(open);
-			c.setLow(low);
-			c.setHigh(high);
-			c.setClose(close);
-
-			ts.addData(c);
-			ts.run();
+				ts.addData(c);
+				ts.run();
+			}
+		} catch (Throwable t) {
+			if (log.isErrorEnabled()) {
+				log.error("Do SyncOrder error!)", t);
+			}
 		}
+
 		return 0;
 	}
 
 	public String doSyncOrder(int orderTicket, int type, double volume,
 			double price, double stoploss, double profit) {
-		
-		
+		try {
+			OrderManager om = OrderManager.getInstance();
+			Order order = om.findOrder(orderTicket);
+			if (order == null) {
+				Order newOrder = new Order(orderTicket, type, volume, price,
+						stoploss, profit);
+				om.syncOrder(newOrder);
+
+			} else {
+				order.setPrice(price);
+				order.setProfit(profit);
+				order.setStoploss(stoploss);
+				order.setType(type);
+				order.setVolume(volume);
+			}
+		} catch (Throwable t) {
+			if (log.isErrorEnabled()) {
+				log.error("Do SyncOrder error!)", t);
+			}
+		}
 		return null;
 
 	}
 
 	public String doTrade(double ask, double bid) {
 
-		return "aa";
+		try {
+			OrderManager om = OrderManager.getInstance();
+			om.clearSyncState();
+
+			ts.trade(ask, bid);
+			return om.getOrderCMD();
+		} catch (Throwable t) {
+			if (log.isErrorEnabled()) {
+				log.error("Do trade error!)", t);
+			}
+		}
+		return null;
+
 	}
 
 	/**
@@ -120,11 +158,13 @@ public class TradeMainInstance {
 			double close = candle.getClose();
 
 			tm.syncData((int) (time / 1000), open, low, high, close);
-			tm.doTrade(0, 0);
+			String cmd = tm.doTrade(close, close);
+			if (cmd != null)
+				System.err.println("send order:" + cmd);
 		}
 
 		try {
-			Thread.sleep(60000);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
