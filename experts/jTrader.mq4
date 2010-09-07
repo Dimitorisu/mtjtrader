@@ -62,6 +62,7 @@ string classpath ="-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\c
 int deinit()
   {
 //----
+   Print("Clear JVM!");
    cleanupVM(0);
 //----
    return(0);
@@ -83,28 +84,28 @@ int start()
    HandleOpenPositions();  
    
 //----
-   string ret = doTrade(Ask,Bid);
+   string cmd = doTrade(Ask,Bid);
    
-   string cmd = StringSubstr(ret,0,1);
-      if ( cmd =="B" )
+   string actionId = StringSubstr(cmd,0,1);
+      if ( actionId =="B" )
    {
         OpenBuyOrder(cmd);      
-   } else if ( cmd =="S")
+   } else if ( actionId =="S")
    {
        OpenSellOrder(cmd);
       
-   } else if(cmd=="C") 
+   } else if(actionId=="C") 
    {
 		   CloseOrder(cmd);
 		   
-	}else if(cmd=="T") 
+	}else if(actionId=="T") 
 	{	   
 		  	ModifyOrder(cmd);
 		
 	}   
 
    
- Print("do trade,cmd:" + cmd);
+// Print("do trade,cmd:" + cmd);
 //----
    return(0);
   }
@@ -172,12 +173,12 @@ void OpenBuyOrder(string cmd)
   double myTakeProfit= StrToDouble(pString3);
   int myMagicNumber = StrToInteger(pString4);
   
-   ticket=OrderSend(Symbol(),OP_BUY,lotMM,myPrice,0,myStopLoss,myTakeProfit,NULL,myMagicNumber,0,NULL); 
+   ticket=OrderSend(Symbol(),OP_BUY,lotMM,myPrice,3,myStopLoss,myTakeProfit,NULL,myMagicNumber,0,NULL); 
 
    if(ticket<=0)
    {
       err = GetLastError();
-      Print("Error opening BUY order: (" + err + ") " ); 
+      Print("Error opening BUY order: (" + err + ") ask:" + Ask + ",myprice:"+myPrice+",cmd:" + cmd ); 
    }
 }
 
