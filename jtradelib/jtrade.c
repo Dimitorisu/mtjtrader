@@ -25,8 +25,9 @@ Description : Hello World in C, Ansi-style
 #define JRE_KEY	    "Software\\JavaSoft\\Java Runtime Environment"
 
 static jobject objTradeService = NULL;
-static JNIEnv *env;
+
 static JavaVM *jvm;
+static JNIEnv *env = NULL;
 static HINSTANCE hInstance;
 static jmethodID syncDataMethod = NULL;
 static jmethodID tradeMethod = NULL;
@@ -49,6 +50,9 @@ void showMsg(char* msg) {
 
 void initJavaService() {
 	jclass javaClass;
+	
+
+	(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
 
 	//查找test.Demo类，返回JAVA类的CLASS对象
 	javaClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
@@ -65,7 +69,6 @@ void initJavaService() {
 			"start", "()V");
 
 		if (startMethod != NULL) {
-			JNIEnv * localEnv = env;
 
 			(*env)->CallVoidMethod(env, objTradeService,startMethod);
 
@@ -84,7 +87,7 @@ void initJavaService() {
 
 		}
 
-		orderMethod = (*env)->GetMethodID(env, javaClass, "doSyncOrder", "(IIDDDD)Ljava/lang/String;");
+		orderMethod = (*env)->GetMethodID(env, javaClass, "doSyncOrder", "(IIDDDD)I");
 		if (tradeMethod == NULL) {
 			showMsg("JVM create failed! doTrade not found.\n");
 
@@ -94,7 +97,7 @@ void initJavaService() {
 		showMsg("JVM create failed! javaClass not found.\n");
 	}
 
-
+	jvmState = 0;
 
 }
 
@@ -103,6 +106,7 @@ void initJavaService() {
 static int FindCreatedJavaVM()
 {
 	//JavaVM *jvm = NULL;
+
 	jsize jvm_count = 0;
 	jint res=0;
 	jint bsize = MAXPATHLEN;
@@ -137,9 +141,9 @@ static int FindCreatedJavaVM()
 
 	res = MyGetCreatedJavaVMs(&jvm, 1, &jvm_count);
 
-	(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
+	//(*jvm)->AttachCurrentThread(jvm, (void**) &env, NULL);
 	//showMsg("find exist jvm!");
-	jvmState = 0;
+	
 
 	return res;
 }
@@ -149,6 +153,7 @@ EXPORT int __stdcall startJavaVM(char *classpath) {
 	//定义一个函数指针，下面用来指向JVM中的JNI_CreateJavaVM函数
 	typedef jint (JNICALL *PFunCreateJavaVM)(JavaVM **, void **, void *);
 	int res;
+
 
 	jint bsize = MAXPATHLEN;
 	char jre_path[MAXPATHLEN];
@@ -171,8 +176,8 @@ EXPORT int __stdcall startJavaVM(char *classpath) {
 
 
 	if(FindCreatedJavaVM()<0) {
-		//showMsg("begin start jvm");
-
+		JNIEnv *env;
+		
 		GetPublicJREHome(jre_path, bsize);
 		//加载JVM.DLL动态库
 
@@ -202,9 +207,11 @@ EXPORT int __stdcall startJavaVM(char *classpath) {
 			showMsg("JVM create failed!\n");
 			return res;
 		}
-		jvmState = 0;
 
-	}
+		
+
+	} 
+
 
 
 	initJavaService();
@@ -219,19 +226,19 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 	jclass systemClass = NULL;
 	jmethodID exitMethod = NULL;
 	JNIEnv * localEnv = env;
-	(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+	//(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 
-	systemClass = (*env)->FindClass(env, "forex/auto/trade/core/TradeMain");
+	systemClass = (*localEnv)->FindClass(localEnv, "forex/auto/trade/core/TradeMain");
 	if (systemClass != NULL) {
-		exitMethod = (*env)->GetMethodID(env, systemClass, "stop", "()V");
+		exitMethod = (*localEnv)->GetMethodID(localEnv, systemClass, "stop", "()V");
 		if (exitMethod != NULL) {
-			(*env)->CallVoidMethod(env, objTradeService, exitMethod);
+			(*localEnv)->CallVoidMethod(localEnv, objTradeService, exitMethod);
 
 		}
 	}
 
 
-	(*env)->DeleteLocalRef(env, objTradeService);
+	(*localEnv)->DeleteLocalRef(localEnv, objTradeService);
 	(*jvm)->DetachCurrentThread(jvm);
 
 
@@ -255,7 +262,7 @@ EXPORT void __stdcall cleanupVM(int exitCode) {
 EXPORT char* __stdcall doTrade(double ask,double bid) {
 	char* cmd = NULL;
 	JNIEnv * localEnv = env;
-	
+
 
 	if (jvmState != 0) {
 		return NULL;
@@ -264,16 +271,16 @@ EXPORT char* __stdcall doTrade(double ask,double bid) {
 	if (tradeMethod != NULL) {
 		jstring msg;
 
-		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+		//(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 		//构造参数并调用对象的方法
 		//jstring arg = newJavaString(env, szTest);
-		
+
 		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
 			tradeMethod, ask,bid);
 		cmd = (char*) JNI_GetStringChars(localEnv, msg);
 		(*localEnv)->DeleteLocalRef(localEnv, msg);
 		//showMsg(cmd);
-		(*jvm)->DetachCurrentThread(jvm);
+		//(*jvm)->DetachCurrentThread(jvm);
 
 	} else {
 		return NULL;
@@ -281,54 +288,52 @@ EXPORT char* __stdcall doTrade(double ask,double bid) {
 	return cmd;
 }
 
-EXPORT char* __stdcall doSyncOrder(int orderTicket, int type, double volume,
-			double price, double stoploss, double profit) {
-	char* cmd = NULL;
-	JNIEnv * localEnv = env;
-	
+EXPORT int __stdcall doSyncOrder(int orderTicket, int type, double volume,
+	double price, double stoploss, double profit) {
+		int cmd = 0;
+		JNIEnv * localEnv = env;
 
-	if (jvmState != 0) {
-		return NULL;
-	}
 
-	if (tradeMethod != NULL) {
-		jstring msg;
+		if (jvmState != 0) {
+			return -2;
+		}
 
-		(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
-		//构造参数并调用对象的方法
-		//jstring arg = newJavaString(env, szTest);
-		
-		msg = (jstring)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
-			tradeMethod, orderTicket,type,volume,price,stoploss,profit);
-		cmd = (char*) JNI_GetStringChars(localEnv, msg);
-		(*localEnv)->DeleteLocalRef(localEnv, msg);
-		// showMsg(ret);
-		(*jvm)->DetachCurrentThread(jvm);
+		if (tradeMethod != NULL) {
 
-	} else {
-		return NULL;
-	}
-	return cmd;
+			//(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+			//构造参数并调用对象的方法
+			//jstring arg = newJavaString(env, szTest);
+
+			cmd = (jint)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
+				tradeMethod, orderTicket,type,volume,price,stoploss,profit);
+
+			// showMsg(ret);
+			//(*jvm)->DetachCurrentThread(jvm);
+
+		} else {
+			return -3;
+		}
+		return cmd;
 }
 
 EXPORT int __stdcall doSyncData(int time, double open, double high, double low,
 	double close) {
 		int cmd = -1;
 		JNIEnv * localEnv = env;
-		
 
-		if (jvmState != 0) {
-		return jvmState;
-	}
-		if (syncDataMethod != NULL) {
+		//if (jvmState != 0) {
+		//	showMsg("jvmState is not Zero");
+		//	return jvmState;
+		//}
+		if (jvm!=NULL && syncDataMethod != NULL) {
 
-			(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
+			//(*jvm)->AttachCurrentThread(jvm, (void**) &localEnv, NULL);
 			//构造参数并调用对象的方法
 			//jstring arg = newJavaString(env, szTest);
 
 			cmd = (jint)(*localEnv)->CallObjectMethod(localEnv, objTradeService,
 				syncDataMethod, time,open,high,low,close);
-			(*jvm)->DetachCurrentThread(jvm);
+			//(*jvm)->DetachCurrentThread(jvm);
 
 		} else {
 			return -3;
