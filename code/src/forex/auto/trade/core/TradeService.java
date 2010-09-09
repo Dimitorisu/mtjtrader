@@ -11,21 +11,13 @@ public class TradeService {
 	private static Log log = LogFactory.getLog(TradeService.class);
 	volatile boolean exit = true;
 	int candleCount = 1440;
-
-	TimeSerise ONE_MIN = TimeSerise.createTimeSerise(TimeSerise.ONE_MIN,
-			candleCount);
-	TimeSerise FIVE_MIN = TimeSerise.createTimeSerise(TimeSerise.FIVE_MIN,
-			candleCount);
-	TimeSerise FIFTTH_MIN = TimeSerise.createTimeSerise(TimeSerise.FIFTTH_MIN,
-			candleCount);
-	TimeSerise HALF_HOUR = TimeSerise.createTimeSerise(TimeSerise.HALF_HOUR,
-			candleCount);
-	TimeSerise ONE_HOUR = TimeSerise.createTimeSerise(TimeSerise.ONE_HOUR,
-			candleCount);
-	TimeSerise FOUR_HOUR = TimeSerise.createTimeSerise(TimeSerise.FOUR_HOUR,
-			candleCount);
-	TimeSerise ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY,
-			candleCount);
+	TimeSerise ONE_MIN = null;
+	TimeSerise FIVE_MIN = null;
+	TimeSerise FIFTTH_MIN = null;
+	TimeSerise HALF_HOUR = null;
+	TimeSerise ONE_HOUR = null;
+	TimeSerise FOUR_HOUR = null;
+	TimeSerise ONE_DAY = null;
 
 	private MyEA ea;
 	private double ask;
@@ -39,6 +31,19 @@ public class TradeService {
 	}
 
 	public void start() {
+
+		ONE_MIN = TimeSerise.createTimeSerise(TimeSerise.ONE_MIN, candleCount);
+		FIVE_MIN = TimeSerise
+				.createTimeSerise(TimeSerise.FIVE_MIN, candleCount);
+		FIFTTH_MIN = TimeSerise.createTimeSerise(TimeSerise.FIFTTH_MIN,
+				candleCount);
+		HALF_HOUR = TimeSerise.createTimeSerise(TimeSerise.HALF_HOUR,
+				candleCount);
+		ONE_HOUR = TimeSerise
+				.createTimeSerise(TimeSerise.ONE_HOUR, candleCount);
+		FOUR_HOUR = TimeSerise.createTimeSerise(TimeSerise.FOUR_HOUR,
+				candleCount);
+		ONE_DAY = TimeSerise.createTimeSerise(TimeSerise.ONE_DAY, candleCount);
 
 		if (ea != null) {
 			ea.init();
@@ -75,7 +80,6 @@ public class TradeService {
 		return ts;
 	}
 
-
 	public void addData(int timeFrame, Candle c) {
 		TimeSerise ts = getTimeSerise(timeFrame);
 		if (ts != null) {
@@ -99,12 +103,11 @@ public class TradeService {
 		FOUR_HOUR.updateCandle(candle);
 		ONE_DAY.updateCandle(candle);
 	}
-	
+
 	public void addEa(MyEA myEA) {
 
 		this.ea = myEA;
 	}
-
 
 	public void run() {
 
@@ -116,25 +119,23 @@ public class TradeService {
 		FOUR_HOUR.start();
 		ONE_DAY.start();
 
-		
 	}
-	
+
 	public double getAsk() {
 		return ask;
 	}
-	
+
 	public double getBid() {
 		return bid;
 	}
-	
-	public void trade(double _ask,double _bid) {
+
+	public void trade(double _ask, double _bid) {
 		this.ask = _ask;
 		this.bid = _bid;
-		
+
 		if (ea != null) {
 			ea.start();
 		}
 	}
-
 
 }

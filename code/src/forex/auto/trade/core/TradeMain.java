@@ -27,7 +27,7 @@ public class TradeMain {
 		return inst.doTrade(ask, bid);
 	}
 
-	public String doSyncOrder(int orderTicket, int type, double volume,
+	public int doSyncOrder(int orderTicket, int type, double volume,
 			double price, double stoploss, double profit) {
 		TradeMainInstance inst = TradeMainInstance.getInstance();
 		return inst.doSyncOrder(orderTicket,type,volume,price,stoploss,profit);
