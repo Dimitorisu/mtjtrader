@@ -22,7 +22,6 @@ public class TradeMainInstance {
 	private static TradeMainInstance instance = new TradeMainInstance();
 
 	private TradeMainInstance() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public static TradeMainInstance getInstance() {
@@ -90,7 +89,7 @@ public class TradeMainInstance {
 		return 0;
 	}
 
-	public String doSyncOrder(int orderTicket, int type, double volume,
+	public int doSyncOrder(int orderTicket, int type, double volume,
 			double price, double stoploss, double profit) {
 		try {
 			OrderManager om = OrderManager.getInstance();
@@ -111,8 +110,9 @@ public class TradeMainInstance {
 			if (log.isErrorEnabled()) {
 				log.error("Do SyncOrder error!)", t);
 			}
+			return -1;
 		}
-		return null;
+		return 0;
 
 	}
 
