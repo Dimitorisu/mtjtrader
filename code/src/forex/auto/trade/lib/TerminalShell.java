@@ -25,16 +25,17 @@ public class TerminalShell implements Shell {
 			m_IO.write(BasicTerminalIO.CRLF);
 			m_IO.write(BasicTerminalIO.CRLF);
 			// output stored environment variables
-			//ConnectionData cd = m_Connection.getConnectionData();
-			String input = readInput(m_IO);;
-		CommadProcessor cp = CommadProcessor.getInstance();
-			while (!"exit".equalsIgnoreCase(input)){
+			// ConnectionData cd = m_Connection.getConnectionData();
+			String input = readInput(m_IO);
+			;
+			CommadProcessor cp = CommadProcessor.getInstance();
+			while (!"exit".equalsIgnoreCase(input)) {
 
 				String output = cp.executeCommand(input);
 				m_IO.write(output + BasicTerminalIO.CRLF);
-				
+
 				input = readInput(m_IO);
-				
+
 			}
 
 			m_IO.write("Goodbye!" + BasicTerminalIO.CRLF);
@@ -47,16 +48,16 @@ public class TerminalShell implements Shell {
 
 	private String readInput(BasicTerminalIO mIO) throws IOException {
 		StringBuffer input = new StringBuffer();
-		
+
 		mIO.write("$");
-		int i =0;
-		
-		while ((i= mIO.read()) != 10) {
+		int i = 0;
+
+		while ((i = mIO.read()) != 10) {
 			char c = (char) i;
 			input.append(c);
 			mIO.write(c);
 		}
-		
+
 		mIO.write(BasicTerminalIO.CRLF);
 		return input.toString();
 	}
