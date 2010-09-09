@@ -24,15 +24,15 @@ Description : Hello World in C, Ansi-style
 #define _launcher_debug 0
 #define JRE_KEY	    "Software\\JavaSoft\\Java Runtime Environment"
 
-static jobject objTradeService = NULL;
+
 
 static JavaVM *jvm;
-static JNIEnv *env = NULL;
-static HINSTANCE hInstance;
-static jmethodID syncDataMethod = NULL;
-static jmethodID tradeMethod = NULL;
-static jmethodID orderMethod = NULL;
-static int jvmState = -1;
+__declspec(thread) static jobject objTradeService = NULL;
+__declspec(thread) static JNIEnv *env = NULL;
+__declspec(thread) static jmethodID syncDataMethod = NULL;
+__declspec(thread) static jmethodID tradeMethod = NULL;
+__declspec(thread) static jmethodID orderMethod = NULL;
+__declspec(thread) static int jvmState = -1;
 
 typedef jint(JNICALL *CreateJavaVM_t)
 	(JavaVM **pvm, void **env, void *args);
@@ -106,7 +106,7 @@ void initJavaService() {
 static int FindCreatedJavaVM()
 {
 	//JavaVM *jvm = NULL;
-
+	HINSTANCE hInstance;
 	jsize jvm_count = 0;
 	jint res=0;
 	jint bsize = MAXPATHLEN;
@@ -177,7 +177,8 @@ EXPORT int __stdcall startJavaVM(char *classpath) {
 
 	if(FindCreatedJavaVM()<0) {
 		JNIEnv *env;
-		
+		HINSTANCE hInstance;
+
 		GetPublicJREHome(jre_path, bsize);
 		//¼ÓÔØJVM.DLL¶¯Ì¬¿â
 
