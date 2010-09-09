@@ -20,7 +20,7 @@
    void cleanupVM(int exitCode);
    string doTrade(double ask,double bid);
    int doSyncData(int time, double open, double high, double low, double close);
-   string doSyncOrder(int ticket,int type, double volume, double price, double stoploss, double profit);
+   int doSyncOrder(int ticket,int type, double volume, double price, double stoploss, double profit);
 // #import "my_expert.dll"
 //   int      ExpertRecalculate(int wParam,int lParam);
 // #import

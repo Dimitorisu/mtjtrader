@@ -16,12 +16,15 @@ double lotMM = 0.1;
 
 int init()
   {
+
 //----
 string classpath ="-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\code\\commons-logging-1.0.4.jar;E:\\jtradesvn\\code\\log4j-1.2.15.jar;E:\\jtradesvn\\code\\net.wimpi.telnetd.jar";
    int retcode = startJavaVM(classpath);
    if(retcode !=0) {
       Print("Start JVM failed! Returned value is ",retcode);
    }
+   
+ Sleep(5000);
    
    int bars = iBars( NULL, PERIOD_D1);
    int synccount = syncData(PERIOD_D1,bars);
@@ -31,7 +34,7 @@ string classpath ="-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\c
    synccount = syncData(PERIOD_H4,bars);
    Print("sync data PERIOD_H4,bars:",synccount);
    
-   
+  
    bars = iBars( NULL, PERIOD_H1);
    synccount = syncData(PERIOD_H1,bars);
    Print("sync data PERIOD_H1,bars:",synccount);
@@ -52,7 +55,7 @@ string classpath ="-Djava.class.path=.;E:\\jtradesvn\\code\\bin;E:\\jtradesvn\\c
    bars = iBars( NULL, PERIOD_M1);
    synccount = syncData(PERIOD_M1,bars);
    Print("sync data PERIOD_M1,bars:",synccount);
-   
+
 //----
    return(0);
   }
@@ -84,6 +87,8 @@ int start()
    HandleOpenPositions();  
    
 //----
+
+
    string cmd = doTrade(Ask,Bid);
    
    string actionId = StringSubstr(cmd,0,1);
