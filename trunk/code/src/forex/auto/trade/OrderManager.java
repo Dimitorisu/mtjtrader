@@ -1,5 +1,6 @@
 package forex.auto.trade;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -10,9 +11,13 @@ public class OrderManager {
 	
 	private static Log log = LogFactory.getLog(OrderManager.class);
 
+	private ArrayList<Order> activeOrders = new ArrayList<Order>();
+	
+	
 	HashMap<Integer, Order> orders = new HashMap<Integer, Order>();
 	private static OrderManager instance = new OrderManager();
-	String orderCMD = null;
+	private ArrayList<String> orderCMD = new ArrayList<String>();
+	
 
 	private OrderManager() {
 	}
@@ -22,6 +27,10 @@ public class OrderManager {
 	}
 
 	public int syncOrder(Order _order) {
+		
+		activeOrders.add(_order);
+		
+		
 		int id = _order.getOrderTicket();
 		Order order = orders.get(id);
 		int ret = 0;
@@ -29,7 +38,6 @@ public class OrderManager {
 			ret = 1;
 		}
 		orders.put(id, _order);
-
 		return ret;
 
 	}
@@ -59,7 +67,7 @@ public class OrderManager {
 			sb.append(87109493);
 
 		}
-		orderCMD = sb.toString();
+		orderCMD.add(sb.toString());
 	}
 
 	public Order findOrder(int orderId) {
@@ -78,7 +86,7 @@ public class OrderManager {
 		sb.append(_order.getVolume());
 		sb.append("|");
 		sb.append(_order.getPrice());
-		this.orderCMD = sb.toString();
+		orderCMD.add(sb.toString());
 
 	}
 
@@ -93,17 +101,20 @@ public class OrderManager {
 		sb.append(_order.getStoploss());
 		sb.append("|");
 		sb.append(_order.getProfit());
-		this.orderCMD = sb.toString();
+		orderCMD.add(sb.toString());
 
 	}
 	
-	public String getOrderCMD() {
-		String ret = orderCMD;
-		orderCMD = null;
-		return ret;
+	public ArrayList<String> getOrderCMD() {
+		return orderCMD;
 	}
 
 	public void clearSyncState() {
+		
+		if(activeOrders.size()>0) {
+			activeOrders.clear();
+		}
+		
 		Collection<Order> orderArrays = orders.values();
 		for( Order o : orderArrays) {
 			if(o.getState() == Order.UNSYNC) {
@@ -119,8 +130,8 @@ public class OrderManager {
 		
 	}
 
-	public int getOrderCount() {
-		return orders.size();
+	public  ArrayList<Order> getActiveOrders() {
+		return activeOrders;
 		
 	}
 
