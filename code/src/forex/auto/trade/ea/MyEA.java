@@ -36,7 +36,7 @@ public class MyEA extends TradeHelper {
 		int state = tread.report();
 		if (state == 1) {
 			OrderManager om = OrderManager.getInstance();
-			int count = om.getOrderCount();
+			int count = om.getActiveOrders().size();
 			if (count == 0) {
 
 				TradeService ts = TradeService.getInstance();

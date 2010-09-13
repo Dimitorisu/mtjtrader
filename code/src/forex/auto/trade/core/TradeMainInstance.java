@@ -1,5 +1,6 @@
 package forex.auto.trade.core;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
 import net.wimpi.telnetd.TelnetD;
@@ -118,12 +119,18 @@ public class TradeMainInstance {
 
 	public String doTrade(double ask, double bid) {
 
+		String ret = null;
 		try {
 			OrderManager om = OrderManager.getInstance();
 			om.clearSyncState();
-
 			ts.trade(ask, bid);
-			return om.getOrderCMD();
+			ArrayList<String> cmdList = om.getOrderCMD();
+			if(cmdList.size()>0) {
+				ret = cmdList.get(0);
+				cmdList.remove(0);
+			}
+			
+			return ret;
 		} catch (Throwable t) {
 			if (log.isErrorEnabled()) {
 				log.error("Do trade error!)", t);
