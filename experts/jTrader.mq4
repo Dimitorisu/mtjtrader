@@ -90,7 +90,7 @@ int start()
 
 
    string cmd = doTrade(Ask,Bid);
-   
+   while(StringLen(cmd)>0 ) {
    string actionId = StringSubstr(cmd,0,1);
       if ( actionId =="B" )
    {
@@ -107,8 +107,9 @@ int start()
 	{	   
 		  	ModifyOrder(cmd);
 		
-	}   
-
+	}
+	       cmd = doTrade(Ask,Bid);
+   }
    
 // Print("do trade,cmd:" + cmd);
 //----
