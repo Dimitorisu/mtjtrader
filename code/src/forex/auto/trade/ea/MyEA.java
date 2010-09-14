@@ -1,5 +1,7 @@
 package forex.auto.trade.ea;
 
+import java.util.ArrayList;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -13,8 +15,8 @@ import forex.auto.trade.lib.Candle;
 public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
 	long lasttime = 0;
-	private TrendSelect tread;
-
+	private TrendSelect trend;
+Expert exp = null;
 	@Override
 	public void destroy() {
 
@@ -23,19 +25,32 @@ public class MyEA extends TradeHelper {
 	@Override
 	public void init() {
 
-		TradeService ts = TradeService.getInstance();
-		TimeSerise times = ts.getTimeSerise(TimeSerise.FOUR_HOUR);
-		this.tread = new TrendSelect(times);
+		exp = new Expert();
 
 	}
 
 	@Override
 	public void start() {
+		OrderManager om = OrderManager.getInstance();
+		ArrayList<Order> orders = om.getActiveOrders();
+		if(orders.size() >0 ) {
+			
+		} else {
+			
+			exp.work();
+			Order o = exp.getOrder();
+			if(o != null) {
+				om.sendOrder(o);
+			}
+			
+		}
+		
+		
 
-		tread.watch();
-		int state = tread.report();
+		trend.watch();
+		int state = trend.report();
 		if (state == 1) {
-			OrderManager om = OrderManager.getInstance();
+			
 			int count = om.getActiveOrders().size();
 			if (count == 0) {
 
