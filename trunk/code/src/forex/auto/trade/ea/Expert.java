@@ -9,29 +9,29 @@ public class Expert {
 	int TREND_LOST = 0;
 
 	int trendState = 0;
-	private TrendSelect trend;
+	private TrendSelect trendExpert;
 	private TradeSelect trader;
 	private Order outputOrder;
 
 	public Expert() {
 		TradeService ts = TradeService.getInstance();
 		TimeSerise times = ts.getTimeSerise(TimeSerise.FOUR_HOUR);
-		this.trend = new TrendSelect(times);
+		this.trendExpert = new TrendSelect(times);
 		this.trader = new TradeSelect();
 	}
 
 	public void work() {
 		
 		int buyOrSell = 0;
+		
+		//look up if exist trend.
 		if (trendFound()) {
+			
+			//do trade in the trend.
 			buyOrSell = traderPendding();
+			
 		} else {
-			trend.watch();
-			int state = trend.report();
-			if (state != 0) {
-				trendState = state;
-				buyOrSell = traderPendding();
-			}
+			//no trend do nothing.
 		}
 		
 		if(buyOrSell !=0) {
@@ -56,7 +56,8 @@ public class Expert {
 	}
 
 	private boolean trendFound() {
-
+		trendExpert.watch();
+		trendState = trendExpert.report();		
 		return trendState != 0;
 	}
 
