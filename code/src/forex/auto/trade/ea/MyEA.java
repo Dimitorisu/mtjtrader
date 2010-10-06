@@ -16,7 +16,8 @@ public class MyEA extends TradeHelper {
 	private static Log log = LogFactory.getLog(MyEA.class);
 	long lasttime = 0;
 	private TrendSelect trend;
-Expert exp = null;
+	Expert exp = null;
+
 	@Override
 	public void destroy() {
 
@@ -33,24 +34,24 @@ Expert exp = null;
 	public void start() {
 		OrderManager om = OrderManager.getInstance();
 		ArrayList<Order> orders = om.getActiveOrders();
-		if(orders.size() >0 ) {
+		if (orders.size() > 0) {
+			//keep order going successful.
 			
+
 		} else {
-			
+
 			exp.work();
 			Order o = exp.getOrder();
-			if(o != null) {
+			if (o != null) {
 				om.sendOrder(o);
 			}
-			
+
 		}
-		
-		
 
 		trend.watch();
 		int state = trend.report();
 		if (state == 1) {
-			
+
 			int count = om.getActiveOrders().size();
 			if (count == 0) {
 
@@ -60,7 +61,7 @@ Expert exp = null;
 						ask + 0.004);
 
 				om.sendOrder(order);
-				
+
 				if (log.isInfoEnabled()) {
 					TradeService tss = TradeService.getInstance();
 					TimeSerise times = tss.getTimeSerise(TimeSerise.ONE_MIN);
@@ -69,7 +70,6 @@ Expert exp = null;
 				}
 			}
 
-			
 		}
 
 	}
