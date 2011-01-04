@@ -1,9 +1,10 @@
 package forex.auto.trade.ea;
 
-import forex.auto.trade.core.MACD;
-import forex.auto.trade.core.TimeSerise;
-import forex.auto.trade.core.TimeSeriseContext;
-import forex.auto.trade.lib.Candle;
+import org.jtrader.core.Candle;
+import org.jtrader.core.TimeSerise;
+import org.jtrader.core.TimeSeriseContext;
+import org.jtrader.helper.MACD;
+
 
 public class TrendSelect {
 

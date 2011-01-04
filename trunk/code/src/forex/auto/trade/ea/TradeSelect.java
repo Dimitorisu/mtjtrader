@@ -1,8 +1,9 @@
 package forex.auto.trade.ea;
 
-import forex.auto.trade.Order;
-import forex.auto.trade.core.TimeSerise;
-import forex.auto.trade.core.TradeService;
+import org.jtrader.core.Order;
+import org.jtrader.core.TimeSerise;
+import org.jtrader.core.TradeService;
+
 
 public class TradeSelect {
 
