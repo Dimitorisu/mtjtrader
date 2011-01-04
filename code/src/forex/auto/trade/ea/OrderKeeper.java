@@ -1,6 +1,6 @@
 package forex.auto.trade.ea;
 
-import forex.auto.trade.Order;
+import org.jtrader.core.Order;
 
 public class OrderKeeper {
 	
